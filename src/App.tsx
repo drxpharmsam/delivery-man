@@ -5,6 +5,7 @@ import LoginPage from './pages/LoginPage';
 import HomePage from './pages/HomePage';
 import DispatchesPage from './pages/DispatchesPage';
 import ProfilePage from './pages/ProfilePage';
+import ErrorBoundary from './components/ErrorBoundary';
 
 const theme = createTheme({
   palette: {
@@ -62,11 +63,17 @@ export default function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <AuthProvider>
-        <HashRouter>
-          <AppRoutes />
-        </HashRouter>
-      </AuthProvider>
+      {/* Outer boundary catches errors in AuthProvider or HashRouter setup */}
+      <ErrorBoundary>
+        <AuthProvider>
+          <HashRouter>
+            {/* Inner boundary catches route-level render errors */}
+            <ErrorBoundary>
+              <AppRoutes />
+            </ErrorBoundary>
+          </HashRouter>
+        </AuthProvider>
+      </ErrorBoundary>
     </ThemeProvider>
   );
 }
