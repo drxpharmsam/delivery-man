@@ -40,8 +40,8 @@ export default function LoginPage() {
 
   const handleSendOtp = useCallback(async () => {
     setError(null);
-    if (!phone.trim()) {
-      setError('Please enter your phone number');
+    if (phone.length !== 10) {
+      setError('Please enter a valid 10-digit mobile number');
       return;
     }
     setLoading(true);
@@ -129,10 +129,12 @@ export default function LoginPage() {
                 fullWidth
                 label="Mobile Number"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
                 onKeyDown={(e) => e.key === 'Enter' && handleSendOtp()}
                 type="tel"
-                inputMode="tel"
+                inputMode="numeric"
+                autoFocus
+                inputProps={{ maxLength: 10, pattern: '[0-9]*' }}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -147,7 +149,7 @@ export default function LoginPage() {
                 variant="contained"
                 size="large"
                 onClick={handleSendOtp}
-                disabled={loading}
+                disabled={loading || phone.length !== 10}
                 sx={{ py: 1.5, borderRadius: 2, fontWeight: 700 }}
               >
                 {loading ? <CircularProgress size={22} color="inherit" /> : 'Send OTP'}
