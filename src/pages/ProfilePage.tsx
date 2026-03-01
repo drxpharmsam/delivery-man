@@ -8,6 +8,11 @@ import {
   CardContent,
   CircularProgress,
   Divider,
+  FormControl,
+  FormControlLabel,
+  FormLabel,
+  Radio,
+  RadioGroup,
   TextField,
   Toolbar,
   Typography,
@@ -25,20 +30,49 @@ export default function ProfilePage() {
   const { user, login, logout } = useAuth();
   const navigate = useNavigate();
 
+  const isFirstSetup = !user?.profileComplete;
+
   const [name, setName] = useState(user?.name ?? '');
+  const [age, setAge] = useState(user?.age != null ? String(user.age) : '');
+  const [gender, setGender] = useState(user?.gender ?? '');
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleSave = async () => {
     if (!user?.phone) return;
+
+    // Validate required fields
+    if (!name.trim()) {
+      setError('Please enter your name');
+      return;
+    }
+    if (!age || isNaN(Number(age)) || Number(age) < 18 || Number(age) > 65) {
+      setError('Please enter a valid age (18–65)');
+      return;
+    }
+    if (!gender) {
+      setError('Please select your gender');
+      return;
+    }
+
     setSaving(true);
     setSuccess(false);
     setError(null);
     try {
       await getOrCreateProfile(user.phone, name.trim() || undefined);
-      login(user.phone, name.trim() || undefined);
+      // Merge all profile fields and mark setup as complete
+      login(user.phone, {
+        name: name.trim() || undefined,
+        age: Number(age),
+        gender,
+        profileComplete: true,
+      });
       setSuccess(true);
+      if (isFirstSetup) {
+        // Redirect to dashboard after first-time profile completion
+        navigate('/home');
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save profile');
     } finally {
@@ -64,7 +98,7 @@ export default function ProfilePage() {
         <Toolbar>
           <PersonIcon sx={{ mr: 1 }} />
           <Typography variant="h6" fontWeight={700} sx={{ flexGrow: 1 }}>
-            My Profile
+            {isFirstSetup ? 'Complete Your Profile' : 'My Profile'}
           </Typography>
         </Toolbar>
       </AppBar>
@@ -95,12 +129,20 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
 
-        {/* Edit Profile */}
+        {/* Edit / Complete Profile */}
         <Card elevation={2} sx={{ borderRadius: 3 }}>
           <CardContent>
-            <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 2 }}>
-              Edit Profile
+            <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 1 }}>
+              {isFirstSetup
+                ? 'Tell us about yourself to get started'
+                : 'Edit Profile'}
             </Typography>
+
+            {isFirstSetup && (
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                This information helps us personalize your experience.
+              </Typography>
+            )}
 
             {success && (
               <Alert severity="success" sx={{ mb: 2 }}>
@@ -113,6 +155,7 @@ export default function ProfilePage() {
               </Alert>
             )}
 
+            {/* Phone — read-only */}
             <TextField
               fullWidth
               label="Phone Number"
@@ -120,13 +163,42 @@ export default function ProfilePage() {
               disabled
               sx={{ mb: 2 }}
             />
+
+            {/* Name */}
             <TextField
               fullWidth
-              label="Name (optional)"
+              label="Full Name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               sx={{ mb: 2 }}
             />
+
+            {/* Age */}
+            <TextField
+              fullWidth
+              label="Age"
+              value={age}
+              onChange={(e) => setAge(e.target.value.replace(/\D/g, ''))}
+              type="text"
+              inputMode="numeric"
+              inputProps={{ maxLength: 3 }}
+              sx={{ mb: 2 }}
+            />
+
+            {/* Gender */}
+            <FormControl sx={{ mb: 3 }}>
+              <FormLabel>Gender</FormLabel>
+              <RadioGroup
+                row
+                value={gender}
+                onChange={(e) => setGender(e.target.value)}
+              >
+                <FormControlLabel value="male" control={<Radio />} label="Male" />
+                <FormControlLabel value="female" control={<Radio />} label="Female" />
+                <FormControlLabel value="other" control={<Radio />} label="Other" />
+              </RadioGroup>
+            </FormControl>
+
             <Button
               fullWidth
               variant="contained"
@@ -135,7 +207,7 @@ export default function ProfilePage() {
               disabled={saving}
               sx={{ py: 1.3, borderRadius: 2, fontWeight: 700 }}
             >
-              Save Profile
+              {isFirstSetup ? 'Save & Continue' : 'Save Profile'}
             </Button>
           </CardContent>
         </Card>
@@ -158,7 +230,8 @@ export default function ProfilePage() {
         </Card>
       </Box>
 
-      <BottomNav />
+      {/* Only show bottom nav after profile setup is complete */}
+      {!isFirstSetup && <BottomNav />}
     </Box>
   );
 }

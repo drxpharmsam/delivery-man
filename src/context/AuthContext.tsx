@@ -3,11 +3,16 @@ import { createContext, useContext, useState, useEffect, type ReactNode } from '
 export interface AuthUser {
   phone: string;
   name?: string;
+  age?: number;
+  gender?: string;
+  /** True once the rider has completed the profile setup (name, age, gender) */
+  profileComplete?: boolean;
 }
 
 interface AuthContextValue {
   user: AuthUser | null;
-  login: (phone: string, name?: string) => void;
+  /** Pass updates to merge into the user record; merges with existing data for the same phone */
+  login: (phone: string, updates?: Partial<Omit<AuthUser, 'phone'>>) => void;
   logout: () => void;
 }
 
@@ -33,7 +38,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [user]);
 
-  const login = (phone: string, name?: string) => setUser({ phone, name });
+  const login = (phone: string, updates?: Partial<Omit<AuthUser, 'phone'>>) =>
+    setUser((prev) => ({
+      // Preserve existing profile fields when logging in with the same phone number
+      ...(prev?.phone === phone ? prev : {}),
+      phone,
+      ...updates,
+    }));
   const logout = () => setUser(null);
 
   return (

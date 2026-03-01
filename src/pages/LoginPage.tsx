@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Button,
@@ -15,6 +15,9 @@ import { useNavigate } from 'react-router-dom';
 import { sendOtp, verifyOtp } from '../api/auth';
 import { useAuth } from '../context/AuthContext';
 
+/** Countdown (in seconds) before the rider can resend the OTP */
+const RESEND_COUNTDOWN = 60;
+
 export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -25,7 +28,17 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSendOtp = async () => {
+  // Resend-OTP countdown state
+  const [resendSeconds, setResendSeconds] = useState(0);
+
+  // Tick down the resend timer every second
+  useEffect(() => {
+    if (resendSeconds <= 0) return;
+    const id = setTimeout(() => setResendSeconds((s) => s - 1), 1000);
+    return () => clearTimeout(id);
+  }, [resendSeconds]);
+
+  const handleSendOtp = useCallback(async () => {
     setError(null);
     if (!phone.trim()) {
       setError('Please enter your phone number');
@@ -35,12 +48,13 @@ export default function LoginPage() {
     try {
       await sendOtp(phone.trim());
       setStep('otp');
+      setResendSeconds(RESEND_COUNTDOWN);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to send OTP');
     } finally {
       setLoading(false);
     }
-  };
+  }, [phone]);
 
   const handleVerifyOtp = async () => {
     setError(null);
@@ -51,6 +65,7 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await verifyOtp(phone.trim(), otp.trim());
+      // Merge phone into session; existing profile data is preserved for returning riders
       login(phone.trim());
       navigate('/home');
     } catch (err) {
@@ -142,13 +157,13 @@ export default function LoginPage() {
             <>
               <TextField
                 fullWidth
-                label="OTP"
+                label="6-digit OTP"
                 value={otp}
-                onChange={(e) => setOtp(e.target.value)}
+                onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
                 onKeyDown={(e) => e.key === 'Enter' && handleVerifyOtp()}
-                type="number"
+                type="text"
                 inputMode="numeric"
-                inputProps={{ maxLength: 6 }}
+                inputProps={{ maxLength: 6, pattern: '[0-9]*' }}
                 sx={{ mb: 2 }}
               />
               <Button
@@ -161,6 +176,25 @@ export default function LoginPage() {
               >
                 {loading ? <CircularProgress size={22} color="inherit" /> : 'Verify OTP'}
               </Button>
+
+              {/* Resend OTP — shown only after the countdown expires */}
+              <Box sx={{ mt: 1.5, display: 'flex', justifyContent: 'center', gap: 1 }}>
+                {resendSeconds > 0 ? (
+                  <Typography variant="body2" color="text.secondary">
+                    Resend OTP in {resendSeconds}s
+                  </Typography>
+                ) : (
+                  <Button
+                    variant="text"
+                    size="small"
+                    onClick={handleSendOtp}
+                    disabled={loading}
+                  >
+                    Resend OTP
+                  </Button>
+                )}
+              </Box>
+
               <Button
                 fullWidth
                 variant="text"
@@ -169,8 +203,9 @@ export default function LoginPage() {
                   setStep('phone');
                   setOtp('');
                   setError(null);
+                  setResendSeconds(0);
                 }}
-                sx={{ mt: 1 }}
+                sx={{ mt: 0.5 }}
               >
                 Change Number
               </Button>
