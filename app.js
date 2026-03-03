@@ -25,7 +25,9 @@ const mockOrders = [
     nursePhone: '+91 98201 34567',
     distance: '3.2 km',
     eta: '12 mins',
-    traffic: 'green'
+    traffic: 'green',
+    lat: 28.6315,
+    lng: 77.2167
   },
   {
     id: 'ORD-002',
@@ -45,7 +47,9 @@ const mockOrders = [
     nurseAssist: false,
     distance: '5.8 km',
     eta: '22 mins',
-    traffic: 'yellow'
+    traffic: 'yellow',
+    lat: 22.5448,
+    lng: 88.3426
   },
   {
     id: 'ORD-003',
@@ -65,7 +69,9 @@ const mockOrders = [
     nurseAssist: false,
     distance: '4.1 km',
     eta: '17 mins',
-    traffic: 'green'
+    traffic: 'green',
+    lat: 18.5204,
+    lng: 73.8567
   },
   {
     id: 'ORD-004',
@@ -85,7 +91,9 @@ const mockOrders = [
     nurseAssist: false,
     distance: '2.4 km',
     eta: '9 mins',
-    traffic: 'green'
+    traffic: 'green',
+    lat: 23.0225,
+    lng: 72.5714
   }
 ];
 
@@ -475,9 +483,7 @@ function logout() {
   stopLocationTracking();
   document.getElementById('inactivity-modal').classList.add('hidden');
   localStorage.removeItem('dm_logged_in');
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById('login').classList.add('active');
-  state.currentScreen = 'login';
+  showScreen('login');
   showToast('You have been logged out', '');
 }
 
@@ -703,6 +709,86 @@ function proceedFromChecklist() {
 }
 
 /* ── Navigation ──────────────────────────────────────────────── */
+// Mapbox public token – restrict allowed URLs in your Mapbox account dashboard
+// to prevent unauthorised usage: https://account.mapbox.com/access-tokens/
+const MAPBOX_TOKEN = window.MAPBOX_TOKEN || '';
+
+// Fallback map centre when no live location is available (New Delhi, India)
+const MAP_DEFAULT_LAT = 28.6315;
+const MAP_DEFAULT_LNG = 77.2167;
+// ~2 km offset used to simulate a nearby origin point in demo/fallback mode
+const MAP_ORIGIN_OFFSET = 0.02;
+
+let _mbMap = null; // single map instance reused across navigations
+
+function initMap(destLat, destLng) {
+  // Guard: Mapbox GL JS must be loaded and a token must be configured
+  if (typeof mapboxgl === 'undefined' || !MAPBOX_TOKEN) {
+    document.getElementById('mapbox-map').innerHTML =
+      '<div style="height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;background:var(--c1)">' +
+      '<span style="font-size:32px">🗺️</span>' +
+      '<span style="font-size:13px;color:var(--c5);font-weight:600">Map unavailable</span></div>';
+    return;
+  }
+
+  // Origin: rider's live location, or fall back to destination ± ~2 km demo offset
+  const originLat = state.currentLocation ? state.currentLocation.lat : destLat - MAP_ORIGIN_OFFSET;
+  const originLng = state.currentLocation ? state.currentLocation.lng : destLng - MAP_ORIGIN_OFFSET;
+
+  mapboxgl.accessToken = MAPBOX_TOKEN;
+
+  // Destroy previous instance if it exists
+  if (_mbMap) { _mbMap.remove(); _mbMap = null; }
+
+  _mbMap = new mapboxgl.Map({
+    container: 'mapbox-map',
+    style: 'mapbox://styles/mapbox/streets-v12',
+    center: [destLng, destLat],
+    zoom: 13,
+    attributionControl: false
+  });
+
+  // Destination marker (red)
+  new mapboxgl.Marker({ color: '#E0433A' })
+    .setLngLat([destLng, destLat])
+    .addTo(_mbMap);
+
+  // Origin marker (teal = app primary colour)
+  new mapboxgl.Marker({ color: '#0A858C' })
+    .setLngLat([originLng, originLat])
+    .addTo(_mbMap);
+
+  // Fit map to show both markers with padding
+  const bounds = new mapboxgl.LngLatBounds(
+    [Math.min(originLng, destLng), Math.min(originLat, destLat)],
+    [Math.max(originLng, destLng), Math.max(originLat, destLat)]
+  );
+  _mbMap.fitBounds(bounds, { padding: 48, maxZoom: 15 });
+
+  // Draw a straight route line between origin and destination
+  _mbMap.on('load', () => {
+    _mbMap.addSource('route', {
+      type: 'geojson',
+      data: {
+        type: 'Feature',
+        geometry: {
+          type: 'LineString',
+          coordinates: [
+            [originLng, originLat],
+            [destLng,   destLat]
+          ]
+        }
+      }
+    });
+    _mbMap.addLayer({
+      id: 'route',
+      type: 'line',
+      source: 'route',
+      layout: { 'line-join': 'round', 'line-cap': 'round' },
+      paint: { 'line-color': '#0A858C', 'line-width': 4, 'line-dasharray': [2, 1.5] }
+    });
+  });
+}
 function beginNavigation(id) {
   state.currentOrderId = id;
   const o = state.orders.find(x => x.id === id);
@@ -717,6 +803,8 @@ function beginNavigation(id) {
   dot.className  = 'nav-traffic-dot ' + tc;
   text.textContent = { green: 'Clear', yellow: 'Moderate', red: 'Heavy' }[tc] || 'Clear';
   showScreen('navigation');
+  // Render Mapbox map after the screen is visible (container must have dimensions)
+  requestAnimationFrame(() => initMap(o.lat || MAP_DEFAULT_LAT, o.lng || MAP_DEFAULT_LNG));
 }
 
 function openGoogleMaps() {
