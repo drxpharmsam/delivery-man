@@ -22,6 +22,28 @@
       </div>
     </div>
 
+    <!-- LOCATION PERMISSION -->
+    <div id="location-permission" class="screen">
+      <div class="loc-perm-wrap">
+        <div class="loc-perm-icon-ring">
+          <div class="loc-perm-pulse"></div>
+          <div class="loc-perm-icon">📍</div>
+        </div>
+        <h2 class="loc-perm-title">Enable Live Location</h2>
+        <p class="loc-perm-desc">DeliveryMan needs your live location to assign nearby orders, track active deliveries, and keep customers informed in real time.</p>
+        <ul class="loc-perm-list">
+          <li><span class="loc-perm-check">✓</span> Assign orders closest to you</li>
+          <li><span class="loc-perm-check">✓</span> Real-time delivery tracking</li>
+          <li><span class="loc-perm-check">✓</span> Works even in the background</li>
+        </ul>
+        <button class="btn-primary full-width" id="loc-allow-btn" onclick="requestLocationPermission()">
+          <span id="loc-btn-text">Allow Location Access</span>
+        </button>
+        <button class="btn-link loc-skip-btn" onclick="skipLocation()">Not Now</button>
+        <p id="loc-status-msg" class="loc-status-msg hidden"></p>
+      </div>
+    </div>
+
     <!-- LOGIN -->
     <div id="login" class="screen">
       <div class="screen-header">

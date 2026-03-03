@@ -149,7 +149,9 @@ let state = {
   warningAt: 30,             // show warning 30s before logout
   remainingSeconds: 300,
   otpResendTimer: null,
-  phoneNumber: ''
+  phoneNumber: '',
+  locationWatchId: null,
+  currentLocation: null
 };
 
 /* ── Helpers ─────────────────────────────────────────────────── */
@@ -310,10 +312,99 @@ function completeSetup() {
   finishLogin();
 }
 
+/* ── Location ────────────────────────────────────────────────── */
+function afterLocationStep() {
+  const loggedIn = localStorage.getItem('dm_logged_in');
+  if (loggedIn) {
+    state.loggedIn = true;
+    setupInactivityListeners();
+    showScreen('dashboard');
+  } else {
+    showScreen('login');
+  }
+}
+
+function requestLocationPermission() {
+  if (!navigator.geolocation) {
+    showLocationStatus('Location not supported on this device.', true);
+    setTimeout(afterLocationStep, 1800);
+    return;
+  }
+  const btn = document.getElementById('loc-allow-btn');
+  const btnText = document.getElementById('loc-btn-text');
+  btn.disabled = true;
+  btnText.textContent = 'Requesting…';
+
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      state.currentLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      localStorage.setItem('dm_location_granted', '1');
+      startLocationTracking();
+      showLocationStatus('📍 Location enabled — tracking active', false);
+      setTimeout(afterLocationStep, 900);
+    },
+    (err) => {
+      btn.disabled = false;
+      btnText.textContent = 'Allow Location Access';
+      const msgs = {
+        1: 'Permission denied. You can enable it in browser settings.',
+        2: 'Location unavailable. Please check your device settings.',
+        3: 'Request timed out. Please try again.'
+      };
+      showLocationStatus(msgs[err.code] || 'Could not get location.', true);
+    },
+    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+  );
+}
+
+function startLocationTracking() {
+  if (!navigator.geolocation) return;
+  if (state.locationWatchId !== null) {
+    navigator.geolocation.clearWatch(state.locationWatchId);
+  }
+  state.locationWatchId = navigator.geolocation.watchPosition(
+    (pos) => {
+      state.currentLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+    },
+    () => { /* silent fail — keep watching */ },
+    { enableHighAccuracy: true, timeout: 15000, maximumAge: 5000 }
+  );
+
+  // Resume watch if page comes back to foreground
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && localStorage.getItem('dm_location_granted') === '1') {
+      if (state.locationWatchId === null) startLocationTracking();
+    }
+  }, { once: false });
+}
+
+function stopLocationTracking() {
+  if (state.locationWatchId !== null) {
+    navigator.geolocation.clearWatch(state.locationWatchId);
+    state.locationWatchId = null;
+  }
+}
+
+function showLocationStatus(msg, isError) {
+  const el = document.getElementById('loc-status-msg');
+  if (!el) return;
+  el.textContent = msg;
+  el.className = 'loc-status-msg' + (isError ? ' error' : '');
+  el.classList.remove('hidden');
+}
+
+function skipLocation() {
+  afterLocationStep();
+}
+
 function finishLogin() {
   state.loggedIn = true;
   localStorage.setItem('dm_logged_in', '1');
   setupInactivityListeners();
+  // Resume location tracking if permission was previously granted
+  if (localStorage.getItem('dm_location_granted') === '1' && state.locationWatchId === null) {
+    startLocationTracking();
+  }
   showScreen('dashboard');
 }
 
@@ -321,6 +412,7 @@ function logout() {
   state.loggedIn = false;
   clearTimeout(state.inactivityTimer);
   clearInterval(state.countdownTimer);
+  stopLocationTracking();
   document.getElementById('inactivity-modal').classList.add('hidden');
   localStorage.removeItem('dm_logged_in');
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -962,15 +1054,15 @@ function setupOtpBoxes() {
 document.addEventListener('DOMContentLoaded', () => {
   setupOtpBoxes();
 
-  // Splash → auto-proceed
+  // Splash → location permission (or skip if already granted) → login/dashboard
   setTimeout(() => {
-    const loggedIn = localStorage.getItem('dm_logged_in');
-    if (loggedIn) {
-      state.loggedIn = true;
-      setupInactivityListeners();
-      showScreen('dashboard');
+    const locationGranted = localStorage.getItem('dm_location_granted') === '1';
+    if (locationGranted) {
+      // Permission already granted — resume tracking silently, skip permission screen
+      startLocationTracking();
+      afterLocationStep();
     } else {
-      showScreen('login');
+      showScreen('location-permission');
     }
   }, 2200);
 });
