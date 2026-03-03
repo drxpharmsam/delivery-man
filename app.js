@@ -203,7 +203,7 @@ function showScreen(id) {
   const navScreens = ['dashboard', 'orders', 'earnings', 'profile'];
   const bottomNav = document.getElementById('bottom-nav');
   if (bottomNav) {
-    bottomNav.style.display = navScreens.includes(id) || true ? 'flex' : 'flex';
+    bottomNav.style.display = navScreens.includes(id) ? 'flex' : 'none';
     document.querySelectorAll('.nav-item').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.screen === id);
     });
