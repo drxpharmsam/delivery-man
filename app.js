@@ -25,7 +25,9 @@ const mockOrders = [
     nursePhone: '+91 98201 34567',
     distance: '3.2 km',
     eta: '12 mins',
-    traffic: 'green'
+    traffic: 'green',
+    lat: 28.6315,
+    lng: 77.2167
   },
   {
     id: 'ORD-002',
@@ -45,7 +47,9 @@ const mockOrders = [
     nurseAssist: false,
     distance: '5.8 km',
     eta: '22 mins',
-    traffic: 'yellow'
+    traffic: 'yellow',
+    lat: 22.5448,
+    lng: 88.3426
   },
   {
     id: 'ORD-003',
@@ -65,7 +69,9 @@ const mockOrders = [
     nurseAssist: false,
     distance: '4.1 km',
     eta: '17 mins',
-    traffic: 'green'
+    traffic: 'green',
+    lat: 18.5204,
+    lng: 73.8567
   },
   {
     id: 'ORD-004',
@@ -85,7 +91,9 @@ const mockOrders = [
     nurseAssist: false,
     distance: '2.4 km',
     eta: '9 mins',
-    traffic: 'green'
+    traffic: 'green',
+    lat: 23.0225,
+    lng: 72.5714
   }
 ];
 
@@ -149,7 +157,11 @@ let state = {
   warningAt: 30,             // show warning 30s before logout
   remainingSeconds: 300,
   otpResendTimer: null,
-  phoneNumber: ''
+  phoneNumber: '',
+  locationWatchId: null,
+  currentLocation: null,
+  backPressedOnce: false,
+  backExitTimer: null
 };
 
 /* ── Helpers ─────────────────────────────────────────────────── */
@@ -221,6 +233,48 @@ function showScreen(id) {
 function goBack() {
   if (state.previousScreen) showScreen(state.previousScreen);
   else showScreen('dashboard');
+}
+
+/* ── Hardware / Browser Back Button ─────────────────────────── */
+// Screens where "back" should offer an exit prompt rather than navigate
+const ROOT_SCREENS = ['splash', 'location-permission', 'login'];
+
+function handleBackPress() {
+  // If the inactivity-warning modal is visible, dismiss it instead
+  const modal = document.getElementById('inactivity-modal');
+  if (modal && !modal.classList.contains('hidden')) {
+    resetInactivityTimer();
+    return;
+  }
+
+  // Root / pre-login screens → "press again to exit" toast
+  if (ROOT_SCREENS.includes(state.currentScreen)) {
+    if (state.backPressedOnce) {
+      clearTimeout(state.backExitTimer);
+      state.backPressedOnce = false;
+      // Close the PWA / browser tab where allowed; otherwise do nothing
+      window.close();
+      return;
+    }
+    state.backPressedOnce = true;
+    showToast('Press back again to exit', '');
+    state.backExitTimer = setTimeout(() => { state.backPressedOnce = false; }, 2000);
+    return;
+  }
+
+  // Normal screens → go to previous screen
+  goBack();
+}
+
+function setupBackNavigation() {
+  // Push a sentinel entry so popstate fires before the browser leaves the page
+  history.pushState({ dmApp: true }, '', window.location.href);
+
+  window.addEventListener('popstate', () => {
+    // Always re-push to keep the sentinel alive (browser never actually leaves)
+    history.pushState({ dmApp: true }, '', window.location.href);
+    handleBackPress();
+  });
 }
 
 /* ── Inactivity Timer ────────────────────────────────────────── */
@@ -310,10 +364,113 @@ function completeSetup() {
   finishLogin();
 }
 
+/* ── Location ────────────────────────────────────────────────── */
+// GeolocationPositionError codes
+const GEO_ERR = { PERMISSION_DENIED: 1, POSITION_UNAVAILABLE: 2, TIMEOUT: 3 };
+
+function afterLocationStep() {
+  const loggedIn = localStorage.getItem('dm_logged_in');
+  if (loggedIn) {
+    state.loggedIn = true;
+    setupInactivityListeners();
+    showScreen('dashboard');
+  } else {
+    showScreen('login');
+  }
+}
+
+function requestLocationPermission() {
+  if (!navigator.geolocation) {
+    showLocationStatus('Location not supported on this device.', true);
+    setTimeout(afterLocationStep, 1800);
+    return;
+  }
+  const btn = document.getElementById('loc-allow-btn');
+  const btnText = document.getElementById('loc-btn-text');
+  btn.disabled = true;
+  btnText.textContent = 'Requesting…';
+
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      state.currentLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      localStorage.setItem('dm_location_granted', '1');
+      startLocationTracking();
+      showLocationStatus('📍 Location enabled — tracking active', false);
+      setTimeout(afterLocationStep, 900);
+    },
+    (err) => {
+      btn.disabled = false;
+      btnText.textContent = 'Allow Location Access';
+      const msgs = {
+        [GEO_ERR.PERMISSION_DENIED]:    'Permission denied. You can enable it in browser settings.',
+        [GEO_ERR.POSITION_UNAVAILABLE]: 'Location unavailable. Please check your device settings.',
+        [GEO_ERR.TIMEOUT]:              'Request timed out. Please try again.'
+      };
+      showLocationStatus(msgs[err.code] || 'Could not get location.', true);
+    },
+    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+  );
+}
+
+function startLocationTracking() {
+  if (!navigator.geolocation) return;
+  if (state.locationWatchId !== null) {
+    navigator.geolocation.clearWatch(state.locationWatchId);
+  }
+  state.locationWatchId = navigator.geolocation.watchPosition(
+    (pos) => {
+      state.currentLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+    },
+    (err) => {
+      // If permission is revoked at runtime, stop tracking and clear the grant flag
+      if (err.code === GEO_ERR.PERMISSION_DENIED) {
+        stopLocationTracking();
+        localStorage.removeItem('dm_location_granted');
+      }
+      // POSITION_UNAVAILABLE / TIMEOUT are transient — watchPosition retries automatically
+    },
+    { enableHighAccuracy: true, timeout: 15000, maximumAge: 5000 }
+  );
+}
+
+function stopLocationTracking() {
+  if (state.locationWatchId !== null) {
+    navigator.geolocation.clearWatch(state.locationWatchId);
+    state.locationWatchId = null;
+  }
+}
+
+// Resume location watch when the page returns to the foreground (registered once at boot)
+function setupLocationVisibilityResume() {
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' &&
+        localStorage.getItem('dm_location_granted') === '1' &&
+        state.locationWatchId === null) {
+      startLocationTracking();
+    }
+  });
+}
+
+function showLocationStatus(msg, isError) {
+  const el = document.getElementById('loc-status-msg');
+  if (!el) return;
+  el.textContent = msg;
+  el.className = 'loc-status-msg' + (isError ? ' error' : '');
+  el.classList.remove('hidden');
+}
+
+function skipLocation() {
+  afterLocationStep();
+}
+
 function finishLogin() {
   state.loggedIn = true;
   localStorage.setItem('dm_logged_in', '1');
   setupInactivityListeners();
+  // Resume location tracking if permission was previously granted
+  if (localStorage.getItem('dm_location_granted') === '1' && state.locationWatchId === null) {
+    startLocationTracking();
+  }
   showScreen('dashboard');
 }
 
@@ -321,11 +478,12 @@ function logout() {
   state.loggedIn = false;
   clearTimeout(state.inactivityTimer);
   clearInterval(state.countdownTimer);
+  clearTimeout(state.backExitTimer);
+  state.backPressedOnce = false;
+  stopLocationTracking();
   document.getElementById('inactivity-modal').classList.add('hidden');
   localStorage.removeItem('dm_logged_in');
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById('login').classList.add('active');
-  state.currentScreen = 'login';
+  showScreen('login');
   showToast('You have been logged out', '');
 }
 
@@ -551,6 +709,86 @@ function proceedFromChecklist() {
 }
 
 /* ── Navigation ──────────────────────────────────────────────── */
+// Mapbox public token – restrict allowed URLs in your Mapbox account dashboard
+// to prevent unauthorised usage: https://account.mapbox.com/access-tokens/
+const MAPBOX_TOKEN = window.MAPBOX_TOKEN || '';
+
+// Fallback map centre when no live location is available (New Delhi, India)
+const MAP_DEFAULT_LAT = 28.6315;
+const MAP_DEFAULT_LNG = 77.2167;
+// ~2 km offset used to simulate a nearby origin point in demo/fallback mode
+const MAP_ORIGIN_OFFSET = 0.02;
+
+let _mbMap = null; // single map instance reused across navigations
+
+function initMap(destLat, destLng) {
+  // Guard: Mapbox GL JS must be loaded and a token must be configured
+  if (typeof mapboxgl === 'undefined' || !MAPBOX_TOKEN) {
+    document.getElementById('mapbox-map').innerHTML =
+      '<div style="height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;background:var(--c1)">' +
+      '<span style="font-size:32px">🗺️</span>' +
+      '<span style="font-size:13px;color:var(--c5);font-weight:600">Map unavailable</span></div>';
+    return;
+  }
+
+  // Origin: rider's live location, or fall back to destination ± ~2 km demo offset
+  const originLat = state.currentLocation ? state.currentLocation.lat : destLat - MAP_ORIGIN_OFFSET;
+  const originLng = state.currentLocation ? state.currentLocation.lng : destLng - MAP_ORIGIN_OFFSET;
+
+  mapboxgl.accessToken = MAPBOX_TOKEN;
+
+  // Destroy previous instance if it exists
+  if (_mbMap) { _mbMap.remove(); _mbMap = null; }
+
+  _mbMap = new mapboxgl.Map({
+    container: 'mapbox-map',
+    style: 'mapbox://styles/mapbox/streets-v12',
+    center: [destLng, destLat],
+    zoom: 13,
+    attributionControl: false
+  });
+
+  // Destination marker (red)
+  new mapboxgl.Marker({ color: '#E0433A' })
+    .setLngLat([destLng, destLat])
+    .addTo(_mbMap);
+
+  // Origin marker (teal = app primary colour)
+  new mapboxgl.Marker({ color: '#0A858C' })
+    .setLngLat([originLng, originLat])
+    .addTo(_mbMap);
+
+  // Fit map to show both markers with padding
+  const bounds = new mapboxgl.LngLatBounds(
+    [Math.min(originLng, destLng), Math.min(originLat, destLat)],
+    [Math.max(originLng, destLng), Math.max(originLat, destLat)]
+  );
+  _mbMap.fitBounds(bounds, { padding: 48, maxZoom: 15 });
+
+  // Draw a straight route line between origin and destination
+  _mbMap.on('load', () => {
+    _mbMap.addSource('route', {
+      type: 'geojson',
+      data: {
+        type: 'Feature',
+        geometry: {
+          type: 'LineString',
+          coordinates: [
+            [originLng, originLat],
+            [destLng,   destLat]
+          ]
+        }
+      }
+    });
+    _mbMap.addLayer({
+      id: 'route',
+      type: 'line',
+      source: 'route',
+      layout: { 'line-join': 'round', 'line-cap': 'round' },
+      paint: { 'line-color': '#0A858C', 'line-width': 4, 'line-dasharray': [2, 1.5] }
+    });
+  });
+}
 function beginNavigation(id) {
   state.currentOrderId = id;
   const o = state.orders.find(x => x.id === id);
@@ -565,6 +803,8 @@ function beginNavigation(id) {
   dot.className  = 'nav-traffic-dot ' + tc;
   text.textContent = { green: 'Clear', yellow: 'Moderate', red: 'Heavy' }[tc] || 'Clear';
   showScreen('navigation');
+  // Render Mapbox map after the screen is visible (container must have dimensions)
+  requestAnimationFrame(() => initMap(o.lat || MAP_DEFAULT_LAT, o.lng || MAP_DEFAULT_LNG));
 }
 
 function openGoogleMaps() {
@@ -961,16 +1201,18 @@ function setupOtpBoxes() {
 /* ── Boot ────────────────────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', () => {
   setupOtpBoxes();
+  setupBackNavigation();
+  setupLocationVisibilityResume();
 
-  // Splash → auto-proceed
+  // Splash → location permission (or skip if already granted) → login/dashboard
   setTimeout(() => {
-    const loggedIn = localStorage.getItem('dm_logged_in');
-    if (loggedIn) {
-      state.loggedIn = true;
-      setupInactivityListeners();
-      showScreen('dashboard');
+    const locationGranted = localStorage.getItem('dm_location_granted') === '1';
+    if (locationGranted) {
+      // Permission already granted — resume tracking silently, skip permission screen
+      startLocationTracking();
+      afterLocationStep();
     } else {
-      showScreen('login');
+      showScreen('location-permission');
     }
   }, 2200);
 });

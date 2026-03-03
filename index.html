@@ -8,6 +8,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
+  <link href="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.css" rel="stylesheet" />
+  <script src="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.js"></script>
 </head>
 <body>
   <div id="app-frame">
@@ -16,11 +18,31 @@
     <div id="splash" class="screen active">
       <div class="splash-content">
         <div class="splash-logo">
-          <div class="pill-truck"><div class="truck-icon">🚐</div><div class="pill-icon">💊</div></div>
+          <img src="public/logo.png" alt="App Logo" class="splash-logo-img" />
         </div>
-        <h1 class="splash-title">DeliveryMan</h1>
-        <p class="splash-sub">Medical Courier Platform</p>
         <div class="splash-loader"><div class="loader-bar"></div></div>
+      </div>
+    </div>
+
+    <!-- LOCATION PERMISSION -->
+    <div id="location-permission" class="screen">
+      <div class="loc-perm-wrap">
+        <div class="loc-perm-icon-ring">
+          <div class="loc-perm-pulse"></div>
+          <div class="loc-perm-icon">📍</div>
+        </div>
+        <h2 class="loc-perm-title">Enable Live Location</h2>
+        <p class="loc-perm-desc">DeliveryMan needs your live location to assign nearby orders, track active deliveries, and keep customers informed in real time.</p>
+        <ul class="loc-perm-list">
+          <li><span class="loc-perm-check">✓</span> Assign orders closest to you</li>
+          <li><span class="loc-perm-check">✓</span> Real-time delivery tracking</li>
+          <li><span class="loc-perm-check">✓</span> Works even in the background</li>
+        </ul>
+        <button class="btn-primary full-width" id="loc-allow-btn" onclick="requestLocationPermission()">
+          <span id="loc-btn-text">Allow Location Access</span>
+        </button>
+        <button class="btn-link loc-skip-btn" onclick="skipLocation()">Not Now</button>
+        <p id="loc-status-msg" class="loc-status-msg hidden"></p>
       </div>
     </div>
 
@@ -229,10 +251,7 @@
       </div>
       <div class="screen-body">
         <div class="card nav-map-card">
-          <div class="map-placeholder">
-            <div class="map-pin">📍</div>
-            <div class="map-text">Map View</div>
-          </div>
+          <div id="mapbox-map"></div>
         </div>
         <div class="card">
           <div class="nav-detail-row">
