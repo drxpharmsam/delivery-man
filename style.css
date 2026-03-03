@@ -666,7 +666,9 @@ input:checked + .toggle-switch.small .toggle-slider::before { transform: transla
   box-shadow: 0 -4px 24px rgba(0,0,0,0.08);
   border-radius: 24px 24px 0 0;
   flex-shrink: 0;
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  /* Safe-area inset for notched/home-indicator phones */
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 4px);
+  min-height: 64px;
 }
 
 @media (min-width: 600px) {
@@ -674,20 +676,51 @@ input:checked + .toggle-switch.small .toggle-slider::before { transform: transla
 }
 
 .nav-item {
-  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
-  padding: 10px 4px 12px;
+  flex: 1;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 8px 4px 10px;
   border: none; background: none; cursor: pointer;
   font-family: inherit; position: relative;
-  transition: color 0.2s;
+  transition: background 0.2s, color 0.2s;
+  border-radius: 0;
+  -webkit-tap-highlight-color: transparent;
 }
-.nav-icon  { font-size: 22px; display: block; }
-.nav-label { font-size: 10px; font-weight: 700; color: var(--gray-text); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+
+/* Teal indicator bar at the very top of the active tab */
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 20%; right: 20%;
+  height: 3px;
+  border-radius: 0 0 4px 4px;
+  background: var(--c4);
+}
+
+/* Pill highlight behind active icon + label */
+.nav-item.active::after {
+  content: '';
+  position: absolute;
+  top: 6px; left: 10%; right: 10%; bottom: 6px;
+  border-radius: 14px;
+  background: rgba(10,133,140,0.09);
+}
+
+.nav-icon  { font-size: 22px; display: block; line-height: 1; position: relative; z-index: 1; }
+.nav-label {
+  font-size: 11px; font-weight: 700;
+  color: var(--gray-text);
+  text-transform: uppercase; letter-spacing: 0.4px;
+  margin-top: 3px;
+  position: relative; z-index: 1;
+  white-space: nowrap;
+}
 .nav-item.active .nav-label { color: var(--c4); }
 .nav-badge {
-  position: absolute; top: 6px; right: 20%;
+  position: absolute; top: 5px; right: 16%;
   background: var(--error); color: var(--white);
   font-size: 10px; font-weight: 800;
   padding: 1px 5px; border-radius: 99px; min-width: 16px; text-align: center;
+  z-index: 2;
 }
 
 /* ---------- Modals ---------- */
@@ -839,4 +872,13 @@ input:checked + .toggle-switch.small .toggle-slider::before { transform: transla
   60%  { opacity: 1; transform: scale(1.12); }
   80%  { transform: scale(0.95); }
   100% { opacity: 1; transform: scale(1); }
+}
+
+/* ---------- Bottom Nav Spacer ---------- */
+/* Keeps scrollable content clear of the bottom nav on all devices,
+   including those with a home-indicator (safe-area-inset-bottom).
+   68px = min-height 64px + bottom padding 4px. */
+.nav-spacer {
+  height: calc(68px + env(safe-area-inset-bottom, 4px));
+  flex-shrink: 0;
 }
