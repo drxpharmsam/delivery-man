@@ -43,3 +43,12 @@ export function getDispatches(assignedToDeliveryId: string): Promise<Dispatch[]>
     `/api/delivery/dispatch?assignedToDeliveryId=${encodeURIComponent(assignedToDeliveryId)}`,
   );
 }
+
+export function updateDispatchStatus(
+  dispatchId: string,
+  status: string,
+): Promise<Dispatch> {
+  return api.put<Dispatch>(`/api/delivery/dispatch/${encodeURIComponent(dispatchId)}/status`, {
+    status,
+  });
+}

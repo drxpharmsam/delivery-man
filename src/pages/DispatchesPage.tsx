@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import {
   AppBar,
   Box,
+  Button,
   Card,
   CardContent,
   Chip,
@@ -14,8 +15,11 @@ import {
 import DeliveryDiningIcon from '@mui/icons-material/DeliveryDining';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
 import { useAuth } from '../context/AuthContext';
-import { getDispatches, type Dispatch } from '../api/delivery';
+import { getDispatches, updateDispatchStatus, type Dispatch } from '../api/delivery';
 import BottomNav from '../components/BottomNav';
 
 const STATUS_COLORS: Record<string, 'default' | 'primary' | 'warning' | 'success' | 'error'> = {
@@ -36,6 +40,7 @@ export default function DispatchesPage() {
   const [dispatches, setDispatches] = useState<Dispatch[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
 
   const fetchDispatches = useCallback(async () => {
     if (!user?.phone) return;
@@ -54,6 +59,73 @@ export default function DispatchesPage() {
   useEffect(() => {
     fetchDispatches();
   }, [fetchDispatches]);
+
+  const handleStatusUpdate = async (dispatchId: string, newStatus: string) => {
+    setUpdatingId(dispatchId);
+    try {
+      const updated = await updateDispatchStatus(dispatchId, newStatus);
+      setDispatches((prev) =>
+        prev.map((d) => (d.id === dispatchId ? { ...d, ...updated } : d)),
+      );
+    } catch {
+      // best-effort; refetch on failure
+      fetchDispatches();
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  /** Returns the next action button(s) for a given dispatch status */
+  function getActions(d: Dispatch) {
+    const status = (d.status ?? '').toLowerCase();
+    const busy = updatingId === d.id;
+    if (status === 'pending') {
+      return (
+        <Button
+          size="small"
+          variant="contained"
+          color="primary"
+          startIcon={busy ? <CircularProgress size={14} color="inherit" /> : <AssignmentTurnedInIcon />}
+          disabled={busy}
+          onClick={() => handleStatusUpdate(d.id, 'assigned')}
+          sx={{ borderRadius: 2, fontWeight: 700, textTransform: 'none' }}
+        >
+          Accept Order
+        </Button>
+      );
+    }
+    if (status === 'assigned') {
+      return (
+        <Button
+          size="small"
+          variant="contained"
+          color="warning"
+          startIcon={busy ? <CircularProgress size={14} color="inherit" /> : <LocalShippingIcon />}
+          disabled={busy}
+          onClick={() => handleStatusUpdate(d.id, 'in_progress')}
+          sx={{ borderRadius: 2, fontWeight: 700, textTransform: 'none' }}
+        >
+          Picked Up
+        </Button>
+      );
+    }
+    if (status === 'in_progress') {
+      return (
+        <Button
+          size="small"
+          variant="contained"
+          color="success"
+          startIcon={busy ? <CircularProgress size={14} color="inherit" /> : <CheckCircleIcon />}
+          disabled={busy}
+          onClick={() => handleStatusUpdate(d.id, 'delivered')}
+          sx={{ borderRadius: 2, fontWeight: 700, textTransform: 'none' }}
+        >
+          Mark Delivered
+        </Button>
+      );
+    }
+    return null;
+  }
 
   return (
     <Box sx={{ bgcolor: '#f5f5f5', minHeight: '100dvh', pb: 8 }}>
@@ -150,7 +222,7 @@ export default function DispatchesPage() {
                       )}
                       {d.amount != null && (
                         <Typography variant="caption" fontWeight={700}>
-                          ₹{d.amount}
+                          ₦{d.amount.toLocaleString()}
                         </Typography>
                       )}
                     </Box>
@@ -170,6 +242,12 @@ export default function DispatchesPage() {
                 >
                   #{idx + 1} · ID: {d.id}
                 </Typography>
+
+                {/* Action buttons for active dispatches */}
+                {(() => {
+                  const action = getActions(d);
+                  return action ? <Box sx={{ mt: 1.5 }}>{action}</Box> : null;
+                })()}
               </CardContent>
             </Card>
           ))}
