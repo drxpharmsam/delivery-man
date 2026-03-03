@@ -18,13 +18,37 @@ export default function BottomNav() {
 
   return (
     <Paper
-      elevation={4}
-      sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1200 }}
+      elevation={0}
+      sx={{
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        zIndex: 1200,
+        borderTop: '1px solid #E5E7EB',
+        background: 'rgba(255,255,255,0.95)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        maxWidth: 480,
+        mx: 'auto',
+      }}
     >
       <BottomNavigation
         value={current === -1 ? 0 : current}
         onChange={(_, newValue: number) => navigate(NAV_ITEMS[newValue].path)}
         showLabels
+        sx={{
+          '& .Mui-selected': {
+            color: '#0A858C',
+          },
+          '& .Mui-selected .MuiBottomNavigationAction-label': {
+            fontWeight: 800,
+            fontSize: '0.75rem',
+          },
+          '& .MuiBottomNavigationAction-label': {
+            fontWeight: 600,
+          },
+        }}
       >
         {NAV_ITEMS.map((item) => (
           <BottomNavigationAction

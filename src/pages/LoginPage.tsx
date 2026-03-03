@@ -3,7 +3,6 @@ import {
   Box,
   Button,
   CircularProgress,
-  Container,
   TextField,
   Typography,
   Alert,
@@ -79,142 +78,176 @@ export default function LoginPage() {
     <Box
       sx={{
         minHeight: '100dvh',
-        background: 'linear-gradient(160deg, #0f9d58 0%, #1a237e 100%)',
+        background: 'linear-gradient(180deg, #A5E6E2 0%, #E0F7F6 100%)',
         display: 'flex',
+        flexDirection: 'column',
         alignItems: 'center',
-        justifyContent: 'center',
+        justifyContent: 'flex-end',
+        position: 'relative',
       }}
     >
-      <Container maxWidth="xs">
+      {/* Top branding area */}
+      <Box
+        sx={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: '38%',
+          background: 'linear-gradient(135deg, #055C61 0%, #0A858C 100%)',
+          borderBottomLeftRadius: 40,
+          borderBottomRightRadius: 40,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: '#fff',
+          zIndex: 0,
+        }}
+      >
         <Box
           sx={{
-            bgcolor: 'background.paper',
-            borderRadius: 4,
-            p: 4,
-            boxShadow: 6,
-            textAlign: 'center',
+            bgcolor: 'rgba(255,255,255,0.2)',
+            borderRadius: '50%',
+            p: 1.5,
+            display: 'inline-flex',
+            mb: 1.5,
           }}
         >
-          <Box sx={{ mb: 2, display: 'flex', justifyContent: 'center' }}>
-            <Box
-              sx={{
-                bgcolor: 'primary.main',
-                borderRadius: '50%',
-                p: 1.5,
-                display: 'inline-flex',
-              }}
-            >
-              <LocalShippingIcon sx={{ fontSize: 40, color: '#fff' }} />
-            </Box>
-          </Box>
-
-          <Typography variant="h5" fontWeight={700} gutterBottom>
-            Delivery Rider
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            {step === 'phone'
-              ? 'Enter your mobile number to continue'
-              : `Enter the OTP sent to ${phone}`}
-          </Typography>
-
-          {error && (
-            <Alert severity="error" sx={{ mb: 2, textAlign: 'left' }}>
-              {error}
-            </Alert>
-          )}
-
-          {step === 'phone' ? (
-            <>
-              <TextField
-                fullWidth
-                label="Mobile Number"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                onKeyDown={(e) => e.key === 'Enter' && handleSendOtp()}
-                type="tel"
-                inputMode="numeric"
-                autoFocus
-                inputProps={{ maxLength: 10, pattern: '[0-9]*' }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <PhoneIcon color="action" />
-                    </InputAdornment>
-                  ),
-                }}
-                sx={{ mb: 2 }}
-              />
-              <Button
-                fullWidth
-                variant="contained"
-                size="large"
-                onClick={handleSendOtp}
-                disabled={loading || phone.length !== 10}
-                sx={{ py: 1.5, borderRadius: 2, fontWeight: 700 }}
-              >
-                {loading ? <CircularProgress size={22} color="inherit" /> : 'Send OTP'}
-              </Button>
-            </>
-          ) : (
-            <>
-              <TextField
-                fullWidth
-                label="6-digit OTP"
-                value={otp}
-                onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                onKeyDown={(e) => e.key === 'Enter' && handleVerifyOtp()}
-                type="text"
-                inputMode="numeric"
-                inputProps={{ maxLength: 6, pattern: '[0-9]*' }}
-                sx={{ mb: 2 }}
-              />
-              <Button
-                fullWidth
-                variant="contained"
-                size="large"
-                onClick={handleVerifyOtp}
-                disabled={loading}
-                sx={{ py: 1.5, borderRadius: 2, fontWeight: 700 }}
-              >
-                {loading ? <CircularProgress size={22} color="inherit" /> : 'Verify OTP'}
-              </Button>
-
-              {/* Resend OTP — shown only after the countdown expires */}
-              <Box sx={{ mt: 1.5, display: 'flex', justifyContent: 'center', gap: 1 }}>
-                {resendSeconds > 0 ? (
-                  <Typography variant="body2" color="text.secondary">
-                    Resend OTP in {resendSeconds}s
-                  </Typography>
-                ) : (
-                  <Button
-                    variant="text"
-                    size="small"
-                    onClick={handleSendOtp}
-                    disabled={loading}
-                  >
-                    Resend OTP
-                  </Button>
-                )}
-              </Box>
-
-              <Button
-                fullWidth
-                variant="text"
-                size="small"
-                onClick={() => {
-                  setStep('phone');
-                  setOtp('');
-                  setError(null);
-                  setResendSeconds(0);
-                }}
-                sx={{ mt: 0.5 }}
-              >
-                Change Number
-              </Button>
-            </>
-          )}
+          <LocalShippingIcon sx={{ fontSize: 44, color: '#fff' }} />
         </Box>
-      </Container>
+        <Typography variant="h5" fontWeight={800} sx={{ color: '#fff' }}>
+          Delivery Rider
+        </Typography>
+        <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)', mt: 0.5 }}>
+          MediFlow Dispatch
+        </Typography>
+      </Box>
+
+      {/* Glass card sheet */}
+      <Box
+        sx={{
+          position: 'relative',
+          zIndex: 1,
+          width: '100%',
+          bgcolor: 'rgba(255,255,255,0.92)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          borderTopLeftRadius: 40,
+          borderTopRightRadius: 40,
+          px: 3,
+          pt: 4,
+          pb: 5,
+          boxShadow: '0 -10px 40px rgba(5,92,97,0.1)',
+        }}
+      >
+        <Typography variant="h6" fontWeight={800} sx={{ mb: 0.5 }}>
+          {step === 'phone' ? 'Welcome Back 👋' : 'Enter OTP'}
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+          {step === 'phone'
+            ? 'Enter your mobile number to continue'
+            : `OTP sent to ${phone}`}
+        </Typography>
+
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
+        )}
+
+        {step === 'phone' ? (
+          <>
+            <TextField
+              fullWidth
+              label="Mobile Number"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+              onKeyDown={(e) => e.key === 'Enter' && handleSendOtp()}
+              type="tel"
+              inputMode="numeric"
+              autoFocus
+              inputProps={{ maxLength: 10, pattern: '[0-9]*' }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <PhoneIcon color="action" />
+                  </InputAdornment>
+                ),
+              }}
+              sx={{ mb: 2.5 }}
+            />
+            <Button
+              fullWidth
+              variant="contained"
+              size="large"
+              onClick={handleSendOtp}
+              disabled={loading || phone.length !== 10}
+              sx={{ py: 1.8, borderRadius: 3, fontWeight: 800, fontSize: 16 }}
+            >
+              {loading ? <CircularProgress size={22} color="inherit" /> : 'Send OTP'}
+            </Button>
+          </>
+        ) : (
+          <>
+            <TextField
+              fullWidth
+              label="6-digit OTP"
+              value={otp}
+              onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+              onKeyDown={(e) => e.key === 'Enter' && handleVerifyOtp()}
+              type="text"
+              inputMode="numeric"
+              inputProps={{ maxLength: 6, pattern: '[0-9]*' }}
+              sx={{ mb: 2.5 }}
+            />
+            <Button
+              fullWidth
+              variant="contained"
+              size="large"
+              onClick={handleVerifyOtp}
+              disabled={loading}
+              sx={{ py: 1.8, borderRadius: 3, fontWeight: 800, fontSize: 16 }}
+            >
+              {loading ? <CircularProgress size={22} color="inherit" /> : 'Verify OTP'}
+            </Button>
+
+            {/* Resend OTP — shown only after the countdown expires */}
+            <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center', gap: 1 }}>
+              {resendSeconds > 0 ? (
+                <Typography variant="body2" color="text.secondary">
+                  Resend OTP in {resendSeconds}s
+                </Typography>
+              ) : (
+                <Button
+                  variant="text"
+                  size="small"
+                  onClick={handleSendOtp}
+                  disabled={loading}
+                  sx={{ color: '#0A858C', fontWeight: 700 }}
+                >
+                  Resend OTP
+                </Button>
+              )}
+            </Box>
+
+            <Button
+              fullWidth
+              variant="text"
+              size="small"
+              onClick={() => {
+                setStep('phone');
+                setOtp('');
+                setError(null);
+                setResendSeconds(0);
+              }}
+              sx={{ mt: 0.5, color: 'text.secondary' }}
+            >
+              Change Number
+            </Button>
+          </>
+        )}
+      </Box>
     </Box>
   );
 }

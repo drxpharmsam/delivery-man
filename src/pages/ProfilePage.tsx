@@ -93,8 +93,18 @@ export default function ProfilePage() {
     .toUpperCase();
 
   return (
-    <Box sx={{ bgcolor: '#f5f5f5', minHeight: '100dvh', pb: 8 }}>
-      <AppBar position="static" elevation={0} sx={{ bgcolor: 'primary.main' }}>
+    <Box sx={{ bgcolor: '#F3F4F6', minHeight: '100dvh', pb: 8 }}>
+      <AppBar
+        position="static"
+        elevation={0}
+        sx={{
+          background: 'linear-gradient(135deg, #055C61 0%, #0A858C 100%)',
+          borderBottomLeftRadius: 32,
+          borderBottomRightRadius: 32,
+          pb: 1,
+          boxShadow: '0 8px 25px rgba(5,92,97,0.2)',
+        }}
+      >
         <Toolbar>
           <PersonIcon sx={{ mr: 1 }} />
           <Typography variant="h6" fontWeight={700} sx={{ flexGrow: 1 }}>
@@ -105,7 +115,7 @@ export default function ProfilePage() {
 
       <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
         {/* Avatar Card */}
-        <Card elevation={2} sx={{ borderRadius: 3, textAlign: 'center' }}>
+        <Card elevation={0} sx={{ textAlign: 'center', background: 'linear-gradient(135deg, #E0F7F6, #fff)' }}>
           <CardContent sx={{ pt: 3 }}>
             <Avatar
               sx={{
@@ -113,9 +123,9 @@ export default function ProfilePage() {
                 height: 80,
                 mx: 'auto',
                 mb: 1,
-                bgcolor: 'primary.main',
+                background: 'linear-gradient(135deg, #055C61, #0A858C)',
                 fontSize: 32,
-                fontWeight: 700,
+                fontWeight: 800,
               }}
             >
               {initials}
@@ -130,9 +140,9 @@ export default function ProfilePage() {
         </Card>
 
         {/* Edit / Complete Profile */}
-        <Card elevation={2} sx={{ borderRadius: 3 }}>
+        <Card elevation={0}>
           <CardContent>
-            <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 1 }}>
+            <Typography variant="subtitle1" fontWeight={800} sx={{ mb: 1, color: '#111827' }}>
               {isFirstSetup
                 ? 'Tell us about yourself to get started'
                 : 'Edit Profile'}
@@ -213,7 +223,7 @@ export default function ProfilePage() {
         </Card>
 
         {/* Logout */}
-        <Card elevation={2} sx={{ borderRadius: 3 }}>
+        <Card elevation={0}>
           <CardContent>
             <Divider sx={{ mb: 2 }} />
             <Button

@@ -115,9 +115,19 @@ export default function HomePage() {
   const displayName = user?.name || 'Rider';
 
   return (
-    <Box sx={{ bgcolor: '#f5f5f5', minHeight: '100dvh', pb: 8 }}>
+    <Box sx={{ bgcolor: '#F3F4F6', minHeight: '100dvh', pb: 8 }}>
       {/* ── App Bar ── */}
-      <AppBar position="static" elevation={0} sx={{ bgcolor: 'primary.main' }}>
+      <AppBar
+        position="static"
+        elevation={0}
+        sx={{
+          background: 'linear-gradient(135deg, #055C61 0%, #0A858C 100%)',
+          borderBottomLeftRadius: 32,
+          borderBottomRightRadius: 32,
+          pb: 1,
+          boxShadow: '0 8px 25px rgba(5,92,97,0.2)',
+        }}
+      >
         <Toolbar>
           <LocalShippingIcon sx={{ mr: 1 }} />
           <Box sx={{ flexGrow: 1 }}>
@@ -160,7 +170,16 @@ export default function HomePage() {
         value={activeTab}
         onChange={(_, v) => setActiveTab(v)}
         variant="fullWidth"
-        sx={{ bgcolor: 'background.paper', boxShadow: 1 }}
+        sx={{
+          bgcolor: 'background.paper',
+          boxShadow: '0 2px 10px rgba(0,0,0,0.06)',
+          borderRadius: 3,
+          mx: 2,
+          mt: 2,
+          '& .MuiTab-root': { fontWeight: 700 },
+          '& .MuiTabs-indicator': { backgroundColor: '#0A858C', height: 3, borderRadius: 2 },
+          '& .Mui-selected': { color: '#0A858C !important' },
+        }}
       >
         <Tab icon={<AttachMoneyIcon />} label="Income" iconPosition="start" />
         <Tab icon={<LocalShippingIcon />} label="Deliveries" iconPosition="start" />
@@ -172,12 +191,12 @@ export default function HomePage() {
           <>
             {/* Today's income vs. total earnings */}
             <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-              <Card elevation={2} sx={{ borderRadius: 3, textAlign: 'center' }}>
+              <Card elevation={0} sx={{ textAlign: 'center', background: 'linear-gradient(135deg, #E0F7F6, #fff)' }}>
                 <CardContent>
-                  <Typography variant="body2" color="text.secondary" gutterBottom>
+                  <Typography variant="body2" color="text.secondary" gutterBottom fontWeight={600}>
                     Today's Income
                   </Typography>
-                  <Typography variant="h5" fontWeight={700} color="primary">
+                  <Typography variant="h5" fontWeight={800} sx={{ color: '#0A858C' }}>
                     {loadingDispatches ? '—' : `₦${todayIncome.toLocaleString()}`}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
@@ -186,12 +205,12 @@ export default function HomePage() {
                 </CardContent>
               </Card>
 
-              <Card elevation={2} sx={{ borderRadius: 3, textAlign: 'center' }}>
+              <Card elevation={0} sx={{ textAlign: 'center', background: 'linear-gradient(135deg, #E0F7F6, #fff)' }}>
                 <CardContent>
-                  <Typography variant="body2" color="text.secondary" gutterBottom>
+                  <Typography variant="body2" color="text.secondary" gutterBottom fontWeight={600}>
                     Total Earnings
                   </Typography>
-                  <Typography variant="h5" fontWeight={700} color="success.dark">
+                  <Typography variant="h5" fontWeight={800} sx={{ color: '#055C61' }}>
                     {loadingDispatches ? '—' : `₦${totalIncome.toLocaleString()}`}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
@@ -202,15 +221,15 @@ export default function HomePage() {
             </Box>
 
             {/* Delivered orders list for income detail */}
-            <Card elevation={2} sx={{ borderRadius: 3 }}>
+            <Card elevation={0}>
               <CardContent>
-                <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 1 }}>
+                <Typography variant="subtitle1" fontWeight={800} sx={{ mb: 1, color: '#111827' }}>
                   Completed Orders
                 </Typography>
                 <Divider sx={{ mb: 1 }} />
                 {loadingDispatches ? (
                   <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
-                    <CircularProgress size={28} />
+                    <CircularProgress size={28} sx={{ color: '#0A858C' }} />
                   </Box>
                 ) : deliveredAll.length === 0 ? (
                   <Typography variant="body2" color="text.secondary" sx={{ py: 1 }}>
@@ -223,7 +242,7 @@ export default function HomePage() {
                         <Typography variant="body2" fontWeight={600}>
                           {d.customerName || d.orderId || d.id}
                         </Typography>
-                        <Typography variant="body2" fontWeight={700} color="success.dark">
+                        <Typography variant="body2" fontWeight={800} sx={{ color: '#055C61' }}>
                           ₦{(d.amount ?? 0).toLocaleString()}
                         </Typography>
                       </Box>
@@ -251,22 +270,22 @@ export default function HomePage() {
           <>
             {/* Quick stats */}
             <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-              <Card elevation={2} sx={{ borderRadius: 3, textAlign: 'center' }}>
+              <Card elevation={0} sx={{ textAlign: 'center', background: 'linear-gradient(135deg, #E0F7F6, #fff)' }}>
                 <CardContent>
-                  <Typography variant="h4" fontWeight={700} color="primary">
+                  <Typography variant="h4" fontWeight={800} sx={{ color: '#0A858C' }}>
                     {loadingDispatches ? '—' : pending.length}
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography variant="body2" color="text.secondary" fontWeight={600}>
                     Pending
                   </Typography>
                 </CardContent>
               </Card>
-              <Card elevation={2} sx={{ borderRadius: 3, textAlign: 'center' }}>
+              <Card elevation={0} sx={{ textAlign: 'center', background: 'linear-gradient(135deg, #FFF0E0, #fff)' }}>
                 <CardContent>
-                  <Typography variant="h4" fontWeight={700} color="warning.main">
+                  <Typography variant="h4" fontWeight={800} color="warning.main">
                     {loadingDispatches ? '—' : inProgress.length}
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography variant="body2" color="text.secondary" fontWeight={600}>
                     In Progress
                   </Typography>
                 </CardContent>
@@ -274,15 +293,15 @@ export default function HomePage() {
             </Box>
 
             {/* Today's delivery list */}
-            <Card elevation={2} sx={{ borderRadius: 3 }}>
+            <Card elevation={0}>
               <CardContent>
-                <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 1 }}>
+                <Typography variant="subtitle1" fontWeight={800} sx={{ mb: 1, color: '#111827' }}>
                   Today's Deliveries
                 </Typography>
                 <Divider sx={{ mb: 1 }} />
                 {loadingDispatches ? (
                   <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
-                    <CircularProgress size={28} />
+                    <CircularProgress size={28} sx={{ color: '#0A858C' }} />
                   </Box>
                 ) : dispatches.length === 0 ? (
                   <Typography variant="body2" color="text.secondary" sx={{ py: 1 }}>
@@ -299,7 +318,7 @@ export default function HomePage() {
                           label={d.status || 'pending'}
                           color={statusColor(d.status)}
                           size="small"
-                          sx={{ fontWeight: 600, fontSize: 11 }}
+                          sx={{ fontWeight: 700, fontSize: 11 }}
                         />
                       </Box>
                       {d.address && (

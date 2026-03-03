@@ -128,8 +128,18 @@ export default function DispatchesPage() {
   }
 
   return (
-    <Box sx={{ bgcolor: '#f5f5f5', minHeight: '100dvh', pb: 8 }}>
-      <AppBar position="static" elevation={0} sx={{ bgcolor: 'primary.main' }}>
+    <Box sx={{ bgcolor: '#F3F4F6', minHeight: '100dvh', pb: 8 }}>
+      <AppBar
+        position="static"
+        elevation={0}
+        sx={{
+          background: 'linear-gradient(135deg, #055C61 0%, #0A858C 100%)',
+          borderBottomLeftRadius: 32,
+          borderBottomRightRadius: 32,
+          pb: 1,
+          boxShadow: '0 8px 25px rgba(5,92,97,0.2)',
+        }}
+      >
         <Toolbar>
           <DeliveryDiningIcon sx={{ mr: 1 }} />
           <Typography variant="h6" fontWeight={700} sx={{ flexGrow: 1 }}>
@@ -149,7 +159,7 @@ export default function DispatchesPage() {
         )}
 
         {!loading && error && (
-          <Card elevation={2} sx={{ borderRadius: 3 }}>
+          <Card elevation={0} sx={{ borderRadius: 3 }}>
             <CardContent>
               <Typography color="error">{error}</Typography>
             </CardContent>
@@ -158,8 +168,8 @@ export default function DispatchesPage() {
 
         {!loading && !error && dispatches.length === 0 && (
           <Box sx={{ textAlign: 'center', py: 6 }}>
-            <DeliveryDiningIcon sx={{ fontSize: 64, color: 'text.disabled', mb: 1 }} />
-            <Typography variant="body1" color="text.secondary">
+            <DeliveryDiningIcon sx={{ fontSize: 64, color: '#A5E6E2', mb: 1 }} />
+            <Typography variant="body1" color="text.secondary" fontWeight={600}>
               No dispatches assigned yet.
             </Typography>
             <Typography variant="body2" color="text.secondary">
@@ -172,8 +182,8 @@ export default function DispatchesPage() {
           dispatches.map((d, idx) => (
             <Card
               key={d.id}
-              elevation={2}
-              sx={{ borderRadius: 3, mb: 2 }}
+              elevation={0}
+              sx={{ mb: 2 }}
             >
               <CardContent>
                 <Box
@@ -185,7 +195,7 @@ export default function DispatchesPage() {
                   }}
                 >
                   <Box>
-                    <Typography variant="subtitle1" fontWeight={700}>
+                    <Typography variant="subtitle1" fontWeight={800} sx={{ color: '#111827' }}>
                       Order #{d.orderId || d.id}
                     </Typography>
                     {d.customerName && (
