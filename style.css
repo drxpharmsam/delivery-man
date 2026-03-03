@@ -129,19 +129,27 @@ html, body { height: 100%; background: var(--bg-color); font-family: 'Plus Jakar
 }
 .splash-content { text-align: center; padding: 32px; }
 .splash-logo { margin-bottom: 24px; }
-.pill-truck {
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-  animation: bounce 1s var(--transition) infinite alternate;
+.splash-logo-img {
+  width: 180px;
+  height: 180px;
+  object-fit: contain;
+  animation: logoEntrance 1.1s var(--transition) both, logoBounce 1.4s 1.1s ease-in-out infinite alternate;
+  filter: drop-shadow(0 8px 32px rgba(0,0,0,0.28));
 }
-.truck-icon { font-size: 56px; }
-.pill-icon  { font-size: 36px; }
-.splash-title { color: var(--white); font-size: 32px; font-weight: 800; letter-spacing: -0.5px; }
-.splash-sub   { color: rgba(255,255,255,0.78); font-size: 14px; margin-top: 6px; }
 .splash-loader { margin-top: 40px; background: rgba(255,255,255,0.25); border-radius: 99px; height: 4px; overflow: hidden; }
 .loader-bar { height: 100%; background: var(--white); border-radius: 99px; animation: loadBar 1.8s var(--transition) forwards; }
 
-@keyframes loadBar { from { width: 0; } to { width: 100%; } }
-@keyframes bounce  { from { transform: translateY(0); } to { transform: translateY(-12px); } }
+@keyframes loadBar    { from { width: 0; } to { width: 100%; } }
+@keyframes logoEntrance {
+  0%   { opacity: 0; transform: scale(0.4); }
+  60%  { opacity: 1; transform: scale(1.12); }
+  80%  { transform: scale(0.95); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes logoBounce {
+  from { transform: translateY(0) scale(1); }
+  to   { transform: translateY(-10px) scale(1.04); }
+}
 
 /* ---------- Login / OTP / Profile-Setup ---------- */
 .phone-input-wrap {
