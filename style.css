@@ -745,3 +745,98 @@ input:checked + .toggle-switch.small .toggle-slider::before { transform: transla
   0%, 100% { box-shadow: 0 0 0 0 rgba(74,222,128,0.5); }
   50%       { box-shadow: 0 0 0 6px rgba(74,222,128,0); }
 }
+
+/* ---------- Dashboard Earnings Hero ---------- */
+.dash-earnings-hero {
+  background: linear-gradient(135deg, var(--c5), var(--c4));
+  border-radius: var(--radius-lg); padding: 22px;
+  text-align: center; margin-bottom: 16px; color: var(--white);
+  cursor: pointer; transition: transform 0.2s var(--transition);
+}
+.dash-earnings-hero:hover { transform: translateY(-2px); }
+.dash-earnings-label { font-size: 12px; opacity: 0.8; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 600; }
+.dash-earnings-amount { font-size: 38px; font-weight: 800; margin: 6px 0; }
+.dash-earnings-sub { font-size: 12px; opacity: 0.75; }
+
+/* ---------- Assigned Delivery Cards ---------- */
+.assign-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-bottom: 12px;
+  border: 1.5px solid var(--c2);
+  box-shadow: var(--shadow-sm);
+}
+.assign-card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.assign-patient { display: flex; align-items: baseline; gap: 6px; margin-bottom: 4px; }
+.assign-label { font-size: 11px; color: var(--gray-text); font-weight: 600; text-transform: uppercase; flex-shrink: 0; }
+.assign-value { font-size: 15px; font-weight: 700; color: #1F2937; }
+.assign-address { font-size: 12px; color: var(--gray-text); margin-bottom: 4px; }
+.assign-phone { font-size: 12px; color: var(--c4); font-weight: 600; margin-bottom: 12px; }
+.assign-actions { display: flex; gap: 10px; }
+.assign-actions .btn-primary,
+.assign-actions .btn-outline { flex: 1; margin-top: 0; text-align: center; }
+
+/* ---------- Delivery Progress Steps ---------- */
+.progress-steps { display: flex; flex-direction: column; }
+.progress-step {
+  display: flex; align-items: center; gap: 14px;
+  padding: 12px 0; border-bottom: 1px solid var(--c1);
+}
+.progress-step:last-child { border-bottom: none; }
+.step-dot {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--c1); border: 2px solid var(--c2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; flex-shrink: 0; font-weight: 800; color: var(--gray-text);
+}
+.step-dot.done { background: var(--success-bg); border-color: var(--success); color: #065F46; }
+.step-dot.active { background: #EEF2FF; border-color: var(--c4); color: var(--c4); animation: pulse 1.5s ease-in-out infinite; }
+.step-text { font-size: 14px; font-weight: 600; color: #374151; }
+.progress-step.done .step-text { color: #065F46; }
+.progress-step.active .step-text { color: var(--c4); font-weight: 700; }
+
+/* ---------- Payment Tabs ---------- */
+.payment-tab-buttons { display: flex; gap: 8px; margin-bottom: 14px; }
+.payment-tab-btn {
+  flex: 1; padding: 9px 12px; border-radius: 12px;
+  border: 2px solid var(--c2); background: var(--white);
+  font-family: inherit; font-size: 13px; font-weight: 700;
+  color: var(--c4); cursor: pointer; transition: all 0.2s;
+}
+.payment-tab-btn.active { background: var(--c4); border-color: var(--c4); color: var(--white); }
+
+/* QR Code visual */
+.qr-placeholder { text-align: center; padding: 8px 0 0; }
+.qr-visual {
+  display: grid; grid-template-columns: repeat(7, 1fr);
+  gap: 3px; padding: 12px;
+  width: 140px; height: 140px;
+  margin: 0 auto 12px;
+  background: var(--white); border: 3px solid #111;
+  border-radius: 10px;
+}
+.qr-cell { border-radius: 2px; background: transparent; }
+.qr-cell.on { background: #111; }
+.qr-amount { font-size: 22px; font-weight: 800; color: var(--c5); margin-bottom: 4px; }
+.qr-label { font-size: 12px; color: var(--gray-text); margin-bottom: 8px; }
+.payment-info { font-size: 14px; color: var(--gray-text); margin-bottom: 8px; }
+.payment-amount-display { font-size: 30px; font-weight: 800; color: var(--c5); text-align: center; margin: 12px 0; }
+
+/* ---------- Delivery Success ---------- */
+.delivery-success-wrap {
+  display: flex; flex-direction: column; align-items: center;
+  text-align: center; padding: 20px 0;
+}
+.success-icon-big { font-size: 80px; animation: bounceIn 0.6s var(--transition); margin-bottom: 16px; }
+.success-big-title { font-size: 26px; font-weight: 800; color: #065F46; margin-bottom: 8px; }
+.success-big-sub { font-size: 14px; color: var(--gray-text); margin-bottom: 20px; line-height: 1.5; }
+.success-details-card { width: 100%; text-align: left; }
+.success-earn { color: var(--success); font-weight: 800; }
+
+@keyframes bounceIn {
+  0%   { opacity: 0; transform: scale(0.3); }
+  60%  { opacity: 1; transform: scale(1.12); }
+  80%  { transform: scale(0.95); }
+  100% { opacity: 1; transform: scale(1); }
+}

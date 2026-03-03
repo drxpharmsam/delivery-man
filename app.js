@@ -150,7 +150,7 @@ let state = {
   isOnline: true,
   notifications: [...mockNotifications],
   orders: [...mockOrders],
-  deliverySteps: { sig: false, photo: false, otp: false, condition: false },
+  deliverySteps: { sig: false, photo: false, otp: false, condition: false, rdPhoto: false, paid: false },
   inactivityTimer: null,
   countdownTimer: null,
   inactivitySeconds: 300,    // 5 minutes
@@ -493,44 +493,166 @@ function initDashboard() {
   document.getElementById('dash-name').textContent = name;
   document.getElementById('dash-greeting').textContent = getGreeting();
 
-  const active    = state.orders.filter(o => o.status === 'in_progress').length;
-  const assigned  = state.orders.filter(o => o.status === 'assigned').length;
   const completed = state.orders.filter(o => o.status === 'delivered').length;
-
-  document.getElementById('stat-assigned').textContent  = assigned;
-  document.getElementById('stat-active').textContent    = active;
-  document.getElementById('stat-completed').textContent = completed;
-  document.getElementById('stat-earnings').textContent  = fmt(mockEarnings.today);
-  document.getElementById('escrow-amount').textContent  = fmtFull(mockEarnings.escrowHeld);
+  document.getElementById('dash-today-earnings').textContent = fmt(mockEarnings.today);
+  document.getElementById('dash-earnings-sub').textContent   = completed + ' order' + (completed !== 1 ? 's' : '') + ' completed';
 
   // Sync online toggle
   const tog = document.getElementById('online-toggle');
   tog.checked = state.isOnline;
   updateOnlineUI();
 
-  // Priority orders
-  const priorityEl = document.getElementById('priority-orders-list');
-  const priorityOrds = state.orders.filter(o => o.priority && o.status !== 'delivered');
-  priorityEl.innerHTML = priorityOrds.length
-    ? priorityOrds.map(o => orderCardHTML(o)).join('')
-    : '<p style="font-size:13px;color:#9CA3AF;margin-bottom:10px;">No priority orders</p>';
-
-  // Cold storage orders
-  const coldEl = document.getElementById('cold-orders-list');
-  const coldOrds = state.orders.filter(o => o.coldStorage && o.status !== 'delivered');
-  coldEl.innerHTML = coldOrds.length
-    ? coldOrds.map(o => orderCardHTML(o)).join('')
-    : '<p style="font-size:13px;color:#9CA3AF;margin-bottom:10px;">No cold-chain orders</p>';
-
-  // Emergency orders
-  const emEl = document.getElementById('emergency-orders-list');
-  const emOrds = state.orders.filter(o => o.emergency && o.status !== 'delivered');
-  emEl.innerHTML = emOrds.length
-    ? emOrds.map(o => orderCardHTML(o)).join('')
-    : '<p style="font-size:13px;color:#9CA3AF;margin-bottom:10px;">No emergency orders</p>';
+  renderAssignedDeliveries();
 
   // Notification badge
   updateNotifBadge();
+}
+
+/* ── Assigned Deliveries (Dashboard) ────────────────────────── */
+function renderAssignedDeliveries() {
+  const list = document.getElementById('assigned-deliveries-list');
+  if (!list) return;
+  const assigned = state.orders.filter(o => o.status === 'assigned' || o.status === 'pending');
+  if (!assigned.length) {
+    list.innerHTML = '<p style="text-align:center;color:#9CA3AF;font-size:14px;padding:20px 0;">No new assignments right now</p>';
+    return;
+  }
+  list.innerHTML = assigned.map(o => `
+    <div class="assign-card">
+      <div class="assign-card-top">
+        <span class="order-id">${o.id}</span>
+        <span class="badge assigned">Assigned</span>
+      </div>
+      <div class="assign-patient"><span class="assign-label">Patient</span><span class="assign-value">${o.patientName}</span></div>
+      <div class="assign-address">📍 ${o.address}</div>
+      <div class="assign-phone">📞 ${o.phone}</div>
+      <div class="assign-actions">
+        <button class="btn-outline small" onclick="declineDelivery('${o.id}')">✗ Decline</button>
+        <button class="btn-primary small" onclick="acceptDelivery('${o.id}')">✓ Accept</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function acceptDelivery(id) {
+  const o = state.orders.find(x => x.id === id);
+  if (!o) return;
+  o.status = 'in_progress';
+  state.currentOrderId = id;
+  showToast('✅ Delivery accepted!', 'success');
+  showDeliveryProgress(id);
+}
+
+function declineDelivery(id) {
+  const o = state.orders.find(x => x.id === id);
+  if (!o) return;
+  o.status = 'cancelled';
+  showToast('Delivery declined', '');
+  renderAssignedDeliveries();
+}
+
+function showDeliveryProgress(id) {
+  state.currentOrderId = id;
+  const o = state.orders.find(x => x.id === id);
+  document.getElementById('progress-order-id').textContent    = id;
+  document.getElementById('progress-patient-name').textContent    = o ? o.patientName : '—';
+  document.getElementById('progress-patient-address').textContent = o ? o.address     : '—';
+  document.getElementById('progress-patient-phone').textContent   = o ? o.phone       : '—';
+  showScreen('delivery-progress');
+}
+
+function beginNavigationFromProgress() {
+  beginNavigation(state.currentOrderId);
+}
+
+/* ── Reached Destination ─────────────────────────────────────── */
+function showReachedDestination() {
+  const o = state.orders.find(x => x.id === state.currentOrderId);
+  document.getElementById('reached-order-id').textContent = o ? o.id : '';
+  const amount = o ? fmtFull(o.amount) : '₹0';
+  document.getElementById('qr-amount').innerHTML  = amount;
+  document.getElementById('cash-amount').innerHTML = amount;
+
+  // Reset state
+  state.deliverySteps.rdPhoto = false;
+  state.deliverySteps.paid    = false;
+  document.getElementById('rd-photo-check').classList.add('hidden');
+  document.getElementById('rd-photo-badge').classList.remove('hidden');
+  document.getElementById('rd-pay-check').classList.add('hidden');
+  document.getElementById('rd-pay-badge').classList.remove('hidden');
+  document.getElementById('rd-photo-preview').classList.add('hidden');
+  document.getElementById('rd-photo-placeholder').classList.remove('hidden');
+  document.getElementById('rd-photo-wrap').classList.add('empty');
+  document.getElementById('complete-rd-btn').disabled = true;
+  selectPaymentTab('qr');
+  buildQrVisual();
+  showScreen('reached-destination');
+}
+
+function buildQrVisual() {
+  const el = document.getElementById('qr-visual');
+  if (!el) return;
+  // 7×7 decorative QR-like grid (not scannable, visual only)
+  const cells = [1,1,1,1,1,1,1, 1,0,0,0,0,0,1, 1,0,1,1,1,0,1, 1,0,1,1,1,0,1, 1,0,1,1,1,0,1, 1,0,0,0,0,0,1, 1,1,1,1,1,1,1];
+  el.innerHTML = cells.map(c => `<div class="qr-cell${c ? ' on' : ''}"></div>`).join('');
+}
+
+function handleReachedPhoto(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = document.getElementById('rd-photo-preview');
+    img.src = ev.target.result;
+    img.classList.remove('hidden');
+    document.getElementById('rd-photo-placeholder').classList.add('hidden');
+    document.getElementById('rd-photo-wrap').classList.remove('empty');
+    state.deliverySteps.rdPhoto = true;
+    document.getElementById('rd-photo-check').classList.remove('hidden');
+    document.getElementById('rd-photo-badge').classList.add('hidden');
+    updateReachedBtn();
+    showToast('Photo captured ✅', 'success');
+  };
+  reader.readAsDataURL(file);
+}
+
+function selectPaymentTab(tab) {
+  document.getElementById('tab-qr-btn').classList.toggle('active', tab === 'qr');
+  document.getElementById('tab-cash-btn').classList.toggle('active', tab === 'cash');
+  document.getElementById('tab-qr-content').classList.toggle('hidden', tab !== 'qr');
+  document.getElementById('tab-cash-content').classList.toggle('hidden', tab !== 'cash');
+}
+
+function markQrPaid() {
+  state.deliverySteps.paid = true;
+  document.getElementById('rd-pay-check').classList.remove('hidden');
+  document.getElementById('rd-pay-badge').classList.add('hidden');
+  updateReachedBtn();
+  showToast('QR payment confirmed ✅', 'success');
+}
+
+function markCashReceived() {
+  state.deliverySteps.paid = true;
+  document.getElementById('rd-pay-check').classList.remove('hidden');
+  document.getElementById('rd-pay-badge').classList.add('hidden');
+  updateReachedBtn();
+  showToast('Cash received ✅', 'success');
+}
+
+function updateReachedBtn() {
+  document.getElementById('complete-rd-btn').disabled =
+    !(state.deliverySteps.rdPhoto && state.deliverySteps.paid);
+}
+
+function showDeliverySuccess() {
+  const o = state.orders.find(x => x.id === state.currentOrderId);
+  if (o) o.status = 'delivered';
+  document.getElementById('success-order-id').textContent      = o ? o.id : '';
+  document.getElementById('success-detail-order').textContent  = o ? o.id : '—';
+  document.getElementById('success-detail-amount').textContent = o ? fmtFull(o.amount) : '—';
+  const earnings = o ? fmtFull(Math.round(o.amount * 0.88)) : '—';
+  document.getElementById('success-detail-earnings').textContent = earnings;
+  showScreen('delivery-success');
 }
 
 function updateOnlineUI() {

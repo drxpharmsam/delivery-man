@@ -145,50 +145,18 @@
         </div>
       </div>
       <div class="screen-body">
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-icon">📋</div>
-            <div class="stat-value" id="stat-assigned">3</div>
-            <div class="stat-label">Assigned</div>
-          </div>
-          <div class="stat-card accent">
-            <div class="stat-icon">🚴</div>
-            <div class="stat-value" id="stat-active">1</div>
-            <div class="stat-label">Active</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon">✅</div>
-            <div class="stat-value" id="stat-completed">1</div>
-            <div class="stat-label">Completed</div>
-          </div>
-          <div class="stat-card success">
-            <div class="stat-icon">₹</div>
-            <div class="stat-value" id="stat-earnings">16.2k</div>
-            <div class="stat-label">Today</div>
-          </div>
+        <!-- Earnings Hero -->
+        <div class="dash-earnings-hero" onclick="showScreen('earnings')">
+          <div class="dash-earnings-label">Today's Earnings</div>
+          <div class="dash-earnings-amount" id="dash-today-earnings">&#8377;16,200</div>
+          <div class="dash-earnings-sub" id="dash-earnings-sub">4 orders completed</div>
         </div>
-        <div class="card escrow-card" onclick="showScreen('earnings')">
-          <div class="escrow-row">
-            <div>
-              <div class="escrow-label">⏳ Escrow Pending Release</div>
-              <div class="escrow-amount" id="escrow-amount">&#8377;25,000</div>
-            </div>
-            <div class="escrow-arrow">&#8250;</div>
-          </div>
-        </div>
+        <!-- Assigned Deliveries -->
         <div class="section-title-row">
-          <h3 class="section-title">🔴 Priority Medical Orders</h3>
+          <h3 class="section-title">📦 New Assignments</h3>
           <span class="see-all" onclick="showScreen('orders')">See all</span>
         </div>
-        <div id="priority-orders-list"></div>
-        <div class="section-title-row">
-          <h3 class="section-title">❄️ Temperature-Sensitive</h3>
-        </div>
-        <div id="cold-orders-list"></div>
-        <div class="section-title-row">
-          <h3 class="section-title">🚨 Emergency Marked</h3>
-        </div>
-        <div id="emergency-orders-list"></div>
+        <div id="assigned-deliveries-list"></div>
         <div style="height:80px;"></div>
       </div>
     </div>
@@ -277,7 +245,7 @@
           </div>
           <button class="btn-primary full-width" onclick="openGoogleMaps()">🗺️ Open in Google Maps</button>
         </div>
-        <button class="btn-success full-width" onclick="showConfirmDelivery()">📦 Arrived – Confirm Delivery</button>
+        <button class="btn-success full-width" onclick="showReachedDestination()">📍 Reached to Destination</button>
         <div style="height:80px;"></div>
       </div>
     </div>
@@ -341,6 +309,120 @@
           </label>
         </div>
         <button class="btn-success full-width" id="complete-delivery-btn" disabled onclick="completeDelivery()">🎉 Complete Delivery</button>
+        <div style="height:80px;"></div>
+      </div>
+    </div>
+
+    <!-- DELIVERY PROGRESS -->
+    <div id="delivery-progress" class="screen">
+      <div class="screen-header">
+        <div class="back-btn" onclick="showScreen('dashboard')">&#8592;</div>
+        <div class="header-icon">🚴</div>
+        <h2>Delivery Accepted</h2>
+        <p id="progress-order-id">ORD-001</p>
+      </div>
+      <div class="screen-body">
+        <div class="card">
+          <h3 class="card-section-title">📦 Order Progress</h3>
+          <div class="progress-steps">
+            <div class="progress-step done">
+              <div class="step-dot done">✓</div>
+              <div class="step-text">Order Placed</div>
+            </div>
+            <div class="progress-step done">
+              <div class="step-dot done">✓</div>
+              <div class="step-text">Received by Delivery Man</div>
+            </div>
+            <div class="progress-step active">
+              <div class="step-dot active">🚴</div>
+              <div class="step-text">Out for Delivery</div>
+            </div>
+            <div class="progress-step">
+              <div class="step-dot">📍</div>
+              <div class="step-text">Delivered</div>
+            </div>
+          </div>
+        </div>
+        <div class="card" id="progress-patient-card">
+          <h3 class="card-section-title">👤 Patient Details</h3>
+          <div class="detail-row"><span class="detail-label">Name</span><span class="detail-value" id="progress-patient-name">—</span></div>
+          <div class="detail-row"><span class="detail-label">Address</span><span class="detail-value" id="progress-patient-address">—</span></div>
+          <div class="detail-row"><span class="detail-label">Phone</span><span class="detail-value" id="progress-patient-phone">—</span></div>
+        </div>
+        <button class="btn-primary full-width" id="progress-navigate-btn" onclick="beginNavigationFromProgress()">🗺️ Start Navigation</button>
+        <div style="height:80px;"></div>
+      </div>
+    </div>
+
+    <!-- REACHED DESTINATION -->
+    <div id="reached-destination" class="screen">
+      <div class="screen-header">
+        <div class="back-btn" onclick="goBack()">&#8592;</div>
+        <div class="header-icon">📍</div>
+        <h2>Reached Destination</h2>
+        <p id="reached-order-id">ORD-001</p>
+      </div>
+      <div class="screen-body">
+        <div class="card confirm-step">
+          <div class="step-header">
+            <span class="step-badge" id="rd-photo-badge">1</span>
+            <span class="step-title">📷 Photo of Delivery Goods</span>
+            <span class="step-check hidden" id="rd-photo-check">✅</span>
+          </div>
+          <div id="rd-photo-wrap" class="photo-preview-wrap empty" onclick="document.getElementById('rd-photo-input').click()">
+            <span id="rd-photo-placeholder">📷 Tap to photograph goods</span>
+            <img id="rd-photo-preview" class="hidden" alt="Delivery goods photo" />
+          </div>
+          <input type="file" id="rd-photo-input" accept="image/*" capture="environment" class="hidden" onchange="handleReachedPhoto(event)" />
+        </div>
+        <div class="card confirm-step" id="cod-payment-card">
+          <div class="step-header">
+            <span class="step-badge" id="rd-pay-badge">2</span>
+            <span class="step-title">💳 COD Payment</span>
+            <span class="step-check hidden" id="rd-pay-check">✅</span>
+          </div>
+          <div class="payment-tab-buttons">
+            <button class="payment-tab-btn active" id="tab-qr-btn" onclick="selectPaymentTab('qr')">📲 QR Code</button>
+            <button class="payment-tab-btn" id="tab-cash-btn" onclick="selectPaymentTab('cash')">💵 Cash</button>
+          </div>
+          <div id="tab-qr-content" class="payment-tab-content">
+            <div class="qr-placeholder">
+              <div class="qr-visual" id="qr-visual"></div>
+              <div class="qr-amount" id="qr-amount">&#8377;0</div>
+              <div class="qr-label">Scan this QR code to pay</div>
+              <button class="btn-outline full-width small" style="margin-top:12px;" onclick="markQrPaid()">✅ QR Payment Received</button>
+            </div>
+          </div>
+          <div id="tab-cash-content" class="payment-tab-content hidden">
+            <p class="payment-info">Collect exact amount from patient:</p>
+            <div class="payment-amount-display" id="cash-amount">&#8377;0</div>
+            <button class="btn-success full-width" onclick="markCashReceived()">✅ Cash Received</button>
+          </div>
+        </div>
+        <button class="btn-success full-width" id="complete-rd-btn" disabled onclick="showDeliverySuccess()">🎉 Complete Delivery</button>
+        <div style="height:80px;"></div>
+      </div>
+    </div>
+
+    <!-- DELIVERY SUCCESS -->
+    <div id="delivery-success" class="screen">
+      <div class="screen-header" style="background: linear-gradient(135deg,#065F46,#059669);">
+        <div class="header-icon">🎉</div>
+        <h2>Delivery Complete!</h2>
+        <p id="success-order-id">ORD-001</p>
+      </div>
+      <div class="screen-body">
+        <div class="delivery-success-wrap">
+          <div class="success-icon-big">✅</div>
+          <h2 class="success-big-title">Order Delivered!</h2>
+          <p class="success-big-sub">Great work! The delivery has been marked complete.</p>
+          <div class="card success-details-card">
+            <div class="detail-row"><span class="detail-label">Order ID</span><span class="detail-value" id="success-detail-order">—</span></div>
+            <div class="detail-row"><span class="detail-label">Amount</span><span class="detail-value" id="success-detail-amount">—</span></div>
+            <div class="detail-row"><span class="detail-label">Your Earnings</span><span class="detail-value success-earn" id="success-detail-earnings">—</span></div>
+          </div>
+          <button class="btn-primary full-width" style="margin-top:8px;" onclick="showScreen('dashboard')">🏠 Back to Dashboard</button>
+        </div>
         <div style="height:80px;"></div>
       </div>
     </div>
