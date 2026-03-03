@@ -8,9 +8,9 @@
 const mockOrders = [
   {
     id: 'ORD-001',
-    patientName: 'Mrs. Adaeze Okonkwo',
-    address: '14 Adeola Odeku St, Victoria Island, Lagos',
-    phone: '+234 801 234 5678',
+    patientName: 'Mrs. Priya Sharma',
+    address: '14 MG Road, Connaught Place, New Delhi',
+    phone: '+91 98101 23456',
     timeSlot: '10:00 AM – 12:00 PM',
     status: 'assigned',
     prescriptionVerified: true,
@@ -22,16 +22,16 @@ const mockOrders = [
     specialInstructions: 'Keep insulin below 8°C. Ring doorbell twice. Ask for patient by name.',
     amount: 12500,
     nurseAssist: true,
-    nursePhone: '+234 802 345 6789',
+    nursePhone: '+91 98201 34567',
     distance: '3.2 km',
     eta: '12 mins',
     traffic: 'green'
   },
   {
     id: 'ORD-002',
-    patientName: 'Mr. Chukwuemeka Eze',
-    address: '7 Allen Avenue, Ikeja, Lagos',
-    phone: '+234 803 456 7890',
+    patientName: 'Mr. Rajesh Kumar',
+    address: '7 Park Street, Kolkata, West Bengal',
+    phone: '+91 98301 45678',
     timeSlot: '2:00 PM – 4:00 PM',
     status: 'in_progress',
     prescriptionVerified: true,
@@ -49,9 +49,9 @@ const mockOrders = [
   },
   {
     id: 'ORD-003',
-    patientName: 'Ms. Fatima Bello',
-    address: '22 Opebi Road, Ikeja, Lagos',
-    phone: '+234 804 567 8901',
+    patientName: 'Ms. Anjali Singh',
+    address: '22 FC Road, Shivajinagar, Pune',
+    phone: '+91 98401 56789',
     timeSlot: '4:00 PM – 6:00 PM',
     status: 'pending',
     prescriptionVerified: true,
@@ -69,9 +69,9 @@ const mockOrders = [
   },
   {
     id: 'ORD-004',
-    patientName: 'Chief Oluwaseun Adeyemi',
-    address: '5 Bourdillon Road, Ikoyi, Lagos',
-    phone: '+234 805 678 9012',
+    patientName: 'Mr. Suresh Patel',
+    address: '5 CG Road, Navrangpura, Ahmedabad',
+    phone: '+91 98501 67890',
     timeSlot: '8:00 AM – 10:00 AM',
     status: 'delivered',
     prescriptionVerified: true,
@@ -90,11 +90,11 @@ const mockOrders = [
 ];
 
 const mockRiderProfile = {
-  name: 'Samuel Okafor',
-  phone: '+234 806 789 0123',
+  name: 'Raj Kumar',
+  phone: '+91 98601 78901',
   idVerified: true,
   bgCheckStatus: 'cleared',
-  bankDetails: '****1234 – GTBank',
+  bankDetails: '****1234 – HDFC Bank',
   kycStatus: 'complete',
   isOnline: true
 };
@@ -128,7 +128,7 @@ const mockNotifications = [
   { id: 1, type: 'new_order',  title: 'New Order Assigned',   message: 'ORD-003 assigned to you',             time: '2 min ago',  read: false },
   { id: 2, type: 'priority',   title: 'Priority Medical Alert',message: 'ORD-001 requires immediate dispatch', time: '15 min ago', read: false },
   { id: 3, type: 'cold_chain', title: 'Cold Chain Warning',    message: 'Check temperature for ORD-001',       time: '1 hr ago',   read: false },
-  { id: 4, type: 'settlement', title: 'Payment Released',      message: '₦24,300 credited to your account',   time: '2 hrs ago',  read: true  },
+  { id: 4, type: 'settlement', title: 'Payment Released',      message: '₹24,300 credited to your account',   time: '2 hrs ago',  read: true  },
   { id: 5, type: 'complaint',  title: 'Complaint Raised',      message: 'Review feedback on ORD-159',          time: '1 day ago',  read: true  },
   { id: 6, type: 'schedule',   title: 'Schedule Updated',      message: 'Tomorrow shift: 8 AM – 6 PM',         time: '1 day ago',  read: true  }
 ];
@@ -154,11 +154,11 @@ let state = {
 
 /* ── Helpers ─────────────────────────────────────────────────── */
 function fmt(n) {
-  if (n >= 1000) return '₦' + (n / 1000).toFixed(1) + 'k';
-  return '₦' + n.toLocaleString();
+  if (n >= 1000) return '₹' + (n / 1000).toFixed(1) + 'k';
+  return '₹' + n.toLocaleString();
 }
 
-function fmtFull(n) { return '₦' + n.toLocaleString(); }
+function fmtFull(n) { return '₹' + n.toLocaleString(); }
 
 function getGreeting() {
   const h = new Date().getHours();
@@ -260,7 +260,7 @@ function sendOtp() {
   const ph = document.getElementById('phone-input').value.trim();
   if (ph.length < 10) { showToast('Enter a valid phone number', 'error'); return; }
   state.phoneNumber = ph;
-  document.getElementById('otp-hint').textContent = 'Enter the 6-digit code sent to +234 ' + ph;
+  document.getElementById('otp-hint').textContent = 'Enter the 6-digit code sent to +91 ' + ph;
   showScreen('otp');
   startOtpTimer();
   showToast('OTP sent! Use 123456 for demo', 'success');
@@ -303,7 +303,7 @@ function verifyOtp() {
 }
 
 function completeSetup() {
-  const name = document.getElementById('setup-name').value.trim() || 'Samuel Okafor';
+  const name = document.getElementById('setup-name').value.trim() || 'Raj Kumar';
   mockRiderProfile.name = name;
   localStorage.setItem('dm_profile_done', '1');
   localStorage.setItem('dm_name', name);
@@ -504,7 +504,7 @@ function openOrderDetail(id) {
     </div>
     ${instrHtml ? `<div class="card">${instrHtml}</div>` : ''}
     <div class="card">
-      <button class="maps-btn full-width" onclick="beginNavigation('${o.id}')">��️ Open Navigation</button>
+      <button class="maps-btn full-width" onclick="beginNavigation('${o.id}')">🗺️ Open Navigation</button>
     </div>
     ${actionBtn}
     ${nurseBtn}
@@ -714,7 +714,7 @@ function openNurseAssist(id) {
   state.currentOrderId = id;
   const o = state.orders.find(x => x.id === id);
   document.getElementById('nurse-order-id').textContent = o ? o.id : '';
-  document.getElementById('nurse-phone-display').textContent = o ? o.nursePhone || '+234 802 345 6789' : '';
+  document.getElementById('nurse-phone-display').textContent = o ? o.nursePhone || '+91 98201 34567' : '';
   showScreen('nurse-assist');
 }
 
@@ -748,7 +748,7 @@ function triggerEmergency(type) {
   conf.textContent = msgs[type] || 'Emergency reported.';
   conf.classList.remove('hidden');
   if (type === 'call') {
-    setTimeout(() => window.location.href = 'tel:+2348001234567', 500);
+    setTimeout(() => window.location.href = 'tel:+918001234567', 500);
   }
 }
 

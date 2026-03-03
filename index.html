@@ -16,7 +16,7 @@
     <div id="splash" class="screen active">
       <div class="splash-content">
         <div class="splash-logo">
-          <div class="pill-truck"><div class="truck-icon">��</div><div class="pill-icon">💊</div></div>
+          <div class="pill-truck"><div class="truck-icon">🚐</div><div class="pill-icon">💊</div></div>
         </div>
         <h1 class="splash-title">DeliveryMan</h1>
         <p class="splash-sub">Medical Courier Platform</p>
@@ -35,8 +35,8 @@
         <div class="card">
           <label class="field-label">Phone Number</label>
           <div class="phone-input-wrap">
-            <span class="phone-prefix">🇳🇬 +234</span>
-            <input id="phone-input" type="tel" class="field-input phone-field" placeholder="801 234 5678" maxlength="11" />
+            <span class="phone-prefix">🇮🇳 +91</span>
+            <input id="phone-input" type="tel" class="field-input phone-field" placeholder="98765 43210" maxlength="10" />
           </div>
           <p class="field-hint">We'll send a verification code to this number</p>
           <button class="btn-primary full-width" onclick="sendOtp()">Send OTP</button>
@@ -82,12 +82,12 @@
       <div class="screen-body">
         <div class="card">
           <div class="avatar-upload-wrap">
-            <div class="avatar-circle large" id="setup-avatar">SO</div>
+            <div class="avatar-circle large" id="setup-avatar">RK</div>
             <button class="btn-outline small" onclick="document.getElementById('avatar-upload').click()">Upload Photo</button>
             <input type="file" id="avatar-upload" accept="image/*" class="hidden" />
           </div>
           <label class="field-label">Full Name</label>
-          <input type="text" class="field-input" id="setup-name" placeholder="e.g. Samuel Okafor" value="Samuel Okafor" />
+          <input type="text" class="field-input" id="setup-name" placeholder="e.g. Raj Kumar" value="Raj Kumar" />
           <label class="field-label" style="margin-top:14px;">Age</label>
           <input type="number" class="field-input" id="setup-age" placeholder="e.g. 28" value="28" />
           <label class="field-label" style="margin-top:14px;">Gender</label>
@@ -107,7 +107,7 @@
         <div class="header-top-row">
           <div>
             <p class="header-greeting" id="dash-greeting">Good morning 👋</p>
-            <h2 id="dash-name">Samuel Okafor</h2>
+            <h2 id="dash-name">Raj Kumar</h2>
           </div>
           <div class="online-toggle-wrap">
             <span id="online-label" class="online-label online">ONLINE</span>
@@ -140,7 +140,7 @@
             <div class="stat-label">Completed</div>
           </div>
           <div class="stat-card success">
-            <div class="stat-icon">₦</div>
+            <div class="stat-icon">₹</div>
             <div class="stat-value" id="stat-earnings">16.2k</div>
             <div class="stat-label">Today</div>
           </div>
@@ -149,7 +149,7 @@
           <div class="escrow-row">
             <div>
               <div class="escrow-label">⏳ Escrow Pending Release</div>
-              <div class="escrow-amount" id="escrow-amount">&#8358;25,000</div>
+              <div class="escrow-amount" id="escrow-amount">&#8377;25,000</div>
             </div>
             <div class="escrow-arrow">&#8250;</div>
           </div>
@@ -352,7 +352,7 @@
           <div class="contact-row">
             <div class="contact-info">
               <div class="contact-name">Assigned Nurse</div>
-              <div class="contact-phone" id="nurse-phone-display">+234 802 345 6789</div>
+              <div class="contact-phone" id="nurse-phone-display">+91 98201 34567</div>
             </div>
             <button class="call-btn" onclick="callNurse()">📞 Call</button>
           </div>
@@ -414,28 +414,28 @@
       <div class="screen-body">
         <div class="earnings-hero-card">
           <div class="earnings-hero-label">Today's Earnings</div>
-          <div class="earnings-hero-amount" id="earnings-today">&#8358;16,200</div>
+          <div class="earnings-hero-amount" id="earnings-today">&#8377;16,200</div>
           <div class="earnings-hero-sub" id="earnings-orders-today">4 orders completed</div>
         </div>
         <div class="stats-grid two">
           <div class="stat-card">
             <div class="stat-icon">📅</div>
-            <div class="stat-value" id="earnings-weekly-val">&#8358;89.5k</div>
+            <div class="stat-value" id="earnings-weekly-val">&#8377;89.5k</div>
             <div class="stat-label">This Week</div>
           </div>
           <div class="stat-card accent">
             <div class="stat-icon">⏳</div>
-            <div class="stat-value" id="earnings-escrow-val">&#8358;25k</div>
+            <div class="stat-value" id="earnings-escrow-val">&#8377;25k</div>
             <div class="stat-label">Escrow Held</div>
           </div>
           <div class="stat-card success">
             <div class="stat-icon">✅</div>
-            <div class="stat-value" id="earnings-released-val">&#8358;64.5k</div>
+            <div class="stat-value" id="earnings-released-val">&#8377;64.5k</div>
             <div class="stat-label">Released</div>
           </div>
           <div class="stat-card">
             <div class="stat-icon">🎁</div>
-            <div class="stat-value" id="earnings-incentives-val">&#8358;5k</div>
+            <div class="stat-value" id="earnings-incentives-val">&#8377;5k</div>
             <div class="stat-label">Incentives</div>
           </div>
         </div>
@@ -443,15 +443,15 @@
           <h3 class="card-section-title">📊 Commission Breakdown</h3>
           <div class="commission-row">
             <span>Gross Earnings (Today)</span>
-            <span id="comm-gross">&#8358;18,409</span>
+            <span id="comm-gross">&#8377;18,409</span>
           </div>
           <div class="commission-row">
             <span>Platform Commission (12%)</span>
-            <span id="comm-deducted" class="text-error">&#8722;&#8358;2,209</span>
+            <span id="comm-deducted" class="text-error">&#8722;&#8377;2,209</span>
           </div>
           <div class="commission-row bold">
             <span>Net Earnings</span>
-            <span id="comm-net">&#8358;16,200</span>
+            <span id="comm-net">&#8377;16,200</span>
           </div>
         </div>
         <div class="card">
@@ -544,9 +544,9 @@
       </div>
       <div class="screen-body">
         <div class="card profile-hero">
-          <div class="avatar-circle large" id="profile-avatar">SO</div>
-          <div class="profile-name" id="profile-name-display">Samuel Okafor</div>
-          <div class="profile-phone" id="profile-phone-display">+234 806 789 0123</div>
+          <div class="avatar-circle large" id="profile-avatar">RK</div>
+          <div class="profile-name" id="profile-name-display">Raj Kumar</div>
+          <div class="profile-phone" id="profile-phone-display">+91 98601 78901</div>
           <div class="profile-status-row">
             <span class="badge verified" id="profile-id-badge">✅ ID Verified</span>
             <span class="badge kyc" id="profile-kyc-badge">✅ KYC Complete</span>
@@ -559,7 +559,7 @@
           </div>
           <div class="profile-field-row">
             <span class="profile-field-label">🏦 Bank Account</span>
-            <span class="profile-field-val" id="profile-bank">****1234 – GTBank</span>
+            <span class="profile-field-val" id="profile-bank">****1234 – HDFC Bank</span>
           </div>
         </div>
         <div class="card">
