@@ -1,0 +1,13 @@
+{
+  "name": "Delivery Rider — MediFlow Dispatch",
+  "short_name": "Delivery Rider",
+  "description": "Accept and track pharmacy dispatch orders on the go.",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#055C61",
+  "theme_color": "#0A858C",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

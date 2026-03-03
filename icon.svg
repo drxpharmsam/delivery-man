@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="Delivery Rider">
+  <rect width="100" height="100" rx="22" fill="#0A858C"/>
+  <!-- truck body -->
+  <rect x="10" y="38" width="52" height="30" rx="4" fill="white" opacity="0.95"/>
+  <!-- cab -->
+  <path d="M62 48 L62 68 L82 68 L82 55 L74 44 L62 44 Z" fill="white" opacity="0.95"/>
+  <rect x="65" y="47" width="12" height="12" rx="2" fill="#0A858C" opacity="0.6"/>
+  <!-- wheels -->
+  <circle cx="26" cy="70" r="7" fill="#055C61"/>
+  <circle cx="26" cy="70" r="3" fill="white" opacity="0.8"/>
+  <circle cx="70" cy="70" r="7" fill="#055C61"/>
+  <circle cx="70" cy="70" r="3" fill="white" opacity="0.8"/>
+  <!-- speed lines -->
+  <line x1="10" y1="30" x2="30" y2="30" stroke="white" stroke-width="3" stroke-linecap="round" opacity="0.6"/>
+  <line x1="6" y1="36" x2="20" y2="36" stroke="white" stroke-width="2.5" stroke-linecap="round" opacity="0.4"/>
+</svg>

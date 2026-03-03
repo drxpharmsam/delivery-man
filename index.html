@@ -1,22 +1,225 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <meta name="theme-color" content="#0A858C" />
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Delivery Rider" />
-    <meta name="description" content="Medicine delivery rider app — accept and track pharmacy dispatch orders on the go." />
-    <title>Delivery Rider</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Delivery Rider — MediFlow Dispatch</title>
+  <meta name="description" content="MediFlow Delivery Rider — accept and track pharmacy dispatch orders on the go.">
+  <meta name="theme-color" content="#0A858C">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Delivery Rider">
+  <link rel="manifest" href="manifest.json">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app-frame">
+
+  <div id="pill-loader">
+    <i class="fa-solid fa-truck-fast loader-icon"></i>
+    <p id="loader-text">MEDIFLOW</p>
+  </div>
+
+  <div id="toast">Message</div>
+
+  <!-- SCREEN: LOGIN -->
+  <div id="screen-login" class="screen auth-bg hidden">
+    <div class="auth-hero">
+      <div class="auth-hero-icon"><i class="fa-solid fa-truck-fast"></i></div>
+      <h1>Delivery Rider</h1>
+      <p>MediFlow Dispatch</p>
+    </div>
+    <div class="glass-sheet">
+      <h2>Welcome Back 👋</h2>
+      <p class="sub">Enter your mobile number to continue</p>
+      <div id="login-alert" class="alert alert-error"></div>
+      <div class="input-group">
+        <label>Mobile Number</label>
+        <input type="tel" id="login-phone" placeholder="0000000000" maxlength="10"
+               inputmode="numeric">
+      </div>
+      <button class="btn-primary" id="btn-send-otp" onclick="sendOtp()" disabled>Send OTP</button>
+    </div>
+  </div>
+
+  <!-- SCREEN: OTP -->
+  <div id="screen-otp" class="screen auth-bg hidden">
+    <div class="auth-hero">
+      <div class="auth-hero-icon"><i class="fa-solid fa-mobile-screen-button"></i></div>
+      <h1>Verify OTP</h1>
+      <p id="otp-hint">OTP sent to your number</p>
+    </div>
+    <div class="glass-sheet">
+      <h2>Enter Code</h2>
+      <p class="sub">Enter the 6-digit code sent via SMS</p>
+      <div id="otp-alert" class="alert alert-error"></div>
+      <div class="otp-row">
+        <input class="otp-box" type="tel" inputmode="numeric" maxlength="1">
+        <input class="otp-box" type="tel" inputmode="numeric" maxlength="1">
+        <input class="otp-box" type="tel" inputmode="numeric" maxlength="1">
+        <input class="otp-box" type="tel" inputmode="numeric" maxlength="1">
+        <input class="otp-box" type="tel" inputmode="numeric" maxlength="1">
+        <input class="otp-box" type="tel" inputmode="numeric" maxlength="1">
+      </div>
+      <button class="btn-primary" id="btn-verify-otp" onclick="verifyOtp()">Verify OTP</button>
+      <div class="resend-row" style="margin-top:14px;">
+        <span id="resend-timer" class="resend-timer"></span>
+        <button class="btn-text" id="btn-resend" onclick="resendOtp()" disabled>Resend OTP</button>
+      </div>
+      <div style="text-align:center;margin-top:8px;">
+        <button class="btn-text gray" onclick="goBackToLogin()">← Change Number</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN: PROFILE SETUP -->
+  <div id="screen-setup" class="screen auth-bg hidden">
+    <div class="auth-hero" style="flex:0.6;">
+      <div class="auth-hero-icon"><i class="fa-solid fa-id-card"></i></div>
+      <h1>Your Profile</h1>
+      <p>Tell us about yourself</p>
+    </div>
+    <div class="glass-sheet">
+      <h2>Personal Info</h2>
+      <p class="sub">This helps us personalise your experience</p>
+      <div id="setup-alert" class="alert alert-error"></div>
+      <input type="hidden" id="setup-phone">
+      <div class="input-group">
+        <label>Full Name</label>
+        <input type="text" id="setup-name" placeholder="e.g. Samuel Ade">
+      </div>
+      <div class="input-group">
+        <label>Age</label>
+        <input type="tel" id="setup-age" inputmode="numeric" placeholder="18–65" maxlength="2">
+      </div>
+      <div class="input-group">
+        <label>Gender</label>
+        <div class="gender-row" role="radiogroup" aria-label="Gender">
+          <div class="gender-chip" role="radio" aria-checked="false" tabindex="0" onclick="selectGender(this,'male')" onkeydown="if(event.key===' '||event.key==='Enter')selectGender(this,'male')">Male</div>
+          <div class="gender-chip" role="radio" aria-checked="false" tabindex="0" onclick="selectGender(this,'female')" onkeydown="if(event.key===' '||event.key==='Enter')selectGender(this,'female')">Female</div>
+          <div class="gender-chip" role="radio" aria-checked="false" tabindex="0" onclick="selectGender(this,'other')" onkeydown="if(event.key===' '||event.key==='Enter')selectGender(this,'other')">Other</div>
+        </div>
+      </div>
+      <button class="btn-primary" id="btn-save-setup" onclick="saveProfileSetup()">
+        <i class="fa-solid fa-floppy-disk"></i> Save &amp; Continue
+      </button>
+    </div>
+  </div>
+
+  <!-- SCREEN: MAIN APP -->
+  <div id="screen-app" class="screen hidden" style="display:flex;flex-direction:column;">
+
+    <div class="header-aura">
+      <div class="header-top">
+        <div>
+          <p class="header-greeting" id="h-greeting">Good morning,</p>
+          <p class="header-name" id="h-name">Rider</p>
+          <p class="header-phone" id="h-phone"></p>
+        </div>
+        <div class="online-toggle" onclick="toggleOnline()">
+          <span class="online-dot" id="online-dot"></span>
+          <span class="online-label" id="online-label">Offline</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Income/Deliveries sub-tabs (Home only) -->
+    <div class="tab-bar" id="home-tab-bar">
+      <button class="tab-btn active" id="htab-income" onclick="switchHomeTab('income')">
+        <i class="fa-solid fa-naira-sign"></i> Income
+      </button>
+      <button class="tab-btn" id="htab-deliveries" onclick="switchHomeTab('deliveries')">
+        <i class="fa-solid fa-truck"></i> Deliveries
+      </button>
+    </div>
+
+    <div id="main-scroll">
+
+      <!-- HOME -->
+      <div id="tab-home" class="main-tab active" style="display:flex;flex-direction:column;gap:14px;">
+        <div id="home-content"><div class="spinner"></div></div>
+      </div>
+
+      <!-- DISPATCHES -->
+      <div id="tab-dispatches" class="main-tab" style="display:none;flex-direction:column;gap:14px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <p style="margin:0;font-size:16px;font-weight:800;color:#111827;">My Dispatches</p>
+          <button id="btn-refresh" onclick="refreshDispatches()"
+                  style="background:none;border:none;font-size:18px;color:var(--c4);cursor:pointer;padding:6px;">
+            <i class="fa-solid fa-rotate-right"></i>
+          </button>
+        </div>
+        <div id="dispatches-list"><div class="spinner"></div></div>
+      </div>
+
+      <!-- PROFILE -->
+      <div id="tab-profile" class="main-tab" style="display:none;flex-direction:column;gap:14px;">
+        <div class="avatar-card">
+          <div class="avatar-circle" id="prof-initials">?</div>
+          <p class="avatar-name" id="prof-name-display">Rider</p>
+          <p class="avatar-phone" id="prof-phone-display"></p>
+        </div>
+        <div class="card">
+          <div class="card-body">
+            <p class="card-title">Edit Profile</p>
+            <div id="profile-success" class="alert alert-success">Profile saved!</div>
+            <div id="profile-alert" class="alert alert-error"></div>
+            <div class="input-group">
+              <label>Phone Number</label>
+              <input type="tel" id="prof-phone-input" disabled>
+            </div>
+            <div class="input-group">
+              <label>Full Name</label>
+              <input type="text" id="prof-name-input" placeholder="Full Name">
+            </div>
+            <div class="input-group">
+              <label>Age</label>
+              <input type="tel" id="prof-age-input" inputmode="numeric" placeholder="18–65" maxlength="2">
+            </div>
+            <div class="input-group">
+              <label>Gender</label>
+              <div class="gender-row" role="radiogroup" aria-label="Gender">
+                <div class="gender-chip gender-chip-edit" role="radio" aria-checked="false" tabindex="0" data-val="male"   onclick="selectEditGender(this,'male')"   onkeydown="if(event.key===' '||event.key==='Enter')selectEditGender(this,'male')">Male</div>
+                <div class="gender-chip gender-chip-edit" role="radio" aria-checked="false" tabindex="0" data-val="female" onclick="selectEditGender(this,'female')" onkeydown="if(event.key===' '||event.key==='Enter')selectEditGender(this,'female')">Female</div>
+                <div class="gender-chip gender-chip-edit" role="radio" aria-checked="false" tabindex="0" data-val="other"  onclick="selectEditGender(this,'other')"  onkeydown="if(event.key===' '||event.key==='Enter')selectEditGender(this,'other')">Other</div>
+              </div>
+            </div>
+            <button class="btn-primary" id="btn-save-profile" onclick="saveProfile()">
+              <i class="fa-solid fa-floppy-disk"></i> Save Profile
+            </button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-body">
+            <button class="btn-danger" onclick="logout()">
+              <i class="fa-solid fa-right-from-bracket"></i> Logout
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /main-scroll -->
+
+    <nav id="bottom-nav">
+      <div class="nav-item active" id="nav-home" onclick="switchMainTab('home')">
+        <i class="fa-solid fa-house"></i><span>Home</span>
+      </div>
+      <div class="nav-item" id="nav-dispatches" onclick="switchMainTab('dispatches')">
+        <i class="fa-solid fa-truck-fast"></i><span>Dispatches</span>
+      </div>
+      <div class="nav-item" id="nav-profile" onclick="switchMainTab('profile')">
+        <i class="fa-solid fa-user"></i><span>Profile</span>
+      </div>
+    </nav>
+
+  </div><!-- /screen-app -->
+
+</div><!-- /app-frame -->
+<script src="app.js"></script>
+</body>
 </html>
