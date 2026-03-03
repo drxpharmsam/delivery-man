@@ -151,7 +151,9 @@ let state = {
   otpResendTimer: null,
   phoneNumber: '',
   locationWatchId: null,
-  currentLocation: null
+  currentLocation: null,
+  backPressedOnce: false,
+  backExitTimer: null
 };
 
 /* ── Helpers ─────────────────────────────────────────────────── */
@@ -223,6 +225,48 @@ function showScreen(id) {
 function goBack() {
   if (state.previousScreen) showScreen(state.previousScreen);
   else showScreen('dashboard');
+}
+
+/* ── Hardware / Browser Back Button ─────────────────────────── */
+// Screens where "back" should offer an exit prompt rather than navigate
+const ROOT_SCREENS = ['splash', 'location-permission', 'login'];
+
+function handleBackPress() {
+  // If the inactivity-warning modal is visible, dismiss it instead
+  const modal = document.getElementById('inactivity-modal');
+  if (modal && !modal.classList.contains('hidden')) {
+    resetInactivityTimer();
+    return;
+  }
+
+  // Root / pre-login screens → "press again to exit" toast
+  if (ROOT_SCREENS.includes(state.currentScreen)) {
+    if (state.backPressedOnce) {
+      clearTimeout(state.backExitTimer);
+      state.backPressedOnce = false;
+      // Close the PWA / browser tab where allowed; otherwise do nothing
+      window.close();
+      return;
+    }
+    state.backPressedOnce = true;
+    showToast('Press back again to exit', '');
+    state.backExitTimer = setTimeout(() => { state.backPressedOnce = false; }, 2000);
+    return;
+  }
+
+  // Normal screens → go to previous screen
+  goBack();
+}
+
+function setupBackNavigation() {
+  // Push a sentinel entry so popstate fires before the browser leaves the page
+  history.pushState({ dmApp: true }, '', window.location.href);
+
+  window.addEventListener('popstate', () => {
+    // Always re-push to keep the sentinel alive (browser never actually leaves)
+    history.pushState({ dmApp: true }, '', window.location.href);
+    handleBackPress();
+  });
 }
 
 /* ── Inactivity Timer ────────────────────────────────────────── */
@@ -313,6 +357,9 @@ function completeSetup() {
 }
 
 /* ── Location ────────────────────────────────────────────────── */
+// GeolocationPositionError codes
+const GEO_ERR = { PERMISSION_DENIED: 1, POSITION_UNAVAILABLE: 2, TIMEOUT: 3 };
+
 function afterLocationStep() {
   const loggedIn = localStorage.getItem('dm_logged_in');
   if (loggedIn) {
@@ -347,9 +394,9 @@ function requestLocationPermission() {
       btn.disabled = false;
       btnText.textContent = 'Allow Location Access';
       const msgs = {
-        1: 'Permission denied. You can enable it in browser settings.',
-        2: 'Location unavailable. Please check your device settings.',
-        3: 'Request timed out. Please try again.'
+        [GEO_ERR.PERMISSION_DENIED]:    'Permission denied. You can enable it in browser settings.',
+        [GEO_ERR.POSITION_UNAVAILABLE]: 'Location unavailable. Please check your device settings.',
+        [GEO_ERR.TIMEOUT]:              'Request timed out. Please try again.'
       };
       showLocationStatus(msgs[err.code] || 'Could not get location.', true);
     },
@@ -366,16 +413,16 @@ function startLocationTracking() {
     (pos) => {
       state.currentLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
     },
-    () => { /* silent fail — keep watching */ },
+    (err) => {
+      // If permission is revoked at runtime, stop tracking and clear the grant flag
+      if (err.code === GEO_ERR.PERMISSION_DENIED) {
+        stopLocationTracking();
+        localStorage.removeItem('dm_location_granted');
+      }
+      // POSITION_UNAVAILABLE / TIMEOUT are transient — watchPosition retries automatically
+    },
     { enableHighAccuracy: true, timeout: 15000, maximumAge: 5000 }
   );
-
-  // Resume watch if page comes back to foreground
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible' && localStorage.getItem('dm_location_granted') === '1') {
-      if (state.locationWatchId === null) startLocationTracking();
-    }
-  }, { once: false });
 }
 
 function stopLocationTracking() {
@@ -383,6 +430,17 @@ function stopLocationTracking() {
     navigator.geolocation.clearWatch(state.locationWatchId);
     state.locationWatchId = null;
   }
+}
+
+// Resume location watch when the page returns to the foreground (registered once at boot)
+function setupLocationVisibilityResume() {
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' &&
+        localStorage.getItem('dm_location_granted') === '1' &&
+        state.locationWatchId === null) {
+      startLocationTracking();
+    }
+  });
 }
 
 function showLocationStatus(msg, isError) {
@@ -412,6 +470,8 @@ function logout() {
   state.loggedIn = false;
   clearTimeout(state.inactivityTimer);
   clearInterval(state.countdownTimer);
+  clearTimeout(state.backExitTimer);
+  state.backPressedOnce = false;
   stopLocationTracking();
   document.getElementById('inactivity-modal').classList.add('hidden');
   localStorage.removeItem('dm_logged_in');
@@ -1053,6 +1113,8 @@ function setupOtpBoxes() {
 /* ── Boot ────────────────────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', () => {
   setupOtpBoxes();
+  setupBackNavigation();
+  setupLocationVisibilityResume();
 
   // Splash → location permission (or skip if already granted) → login/dashboard
   setTimeout(() => {
