@@ -1,22 +1,718 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <meta name="theme-color" content="#0f9d58" />
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Delivery Rider" />
-    <meta name="description" content="Medicine delivery rider app — accept and track pharmacy dispatch orders on the go." />
-    <title>Delivery Rider</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DeliveryMan – Medical Courier</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app-frame">
+
+    <!-- SPLASH -->
+    <div id="splash" class="screen active">
+      <div class="splash-content">
+        <div class="splash-logo">
+          <div class="pill-truck"><div class="truck-icon">��</div><div class="pill-icon">💊</div></div>
+        </div>
+        <h1 class="splash-title">DeliveryMan</h1>
+        <p class="splash-sub">Medical Courier Platform</p>
+        <div class="splash-loader"><div class="loader-bar"></div></div>
+      </div>
+    </div>
+
+    <!-- LOGIN -->
+    <div id="login" class="screen">
+      <div class="screen-header">
+        <div class="header-icon">🚐</div>
+        <h2>Welcome Back</h2>
+        <p>Enter your phone number to continue</p>
+      </div>
+      <div class="screen-body">
+        <div class="card">
+          <label class="field-label">Phone Number</label>
+          <div class="phone-input-wrap">
+            <span class="phone-prefix">🇳🇬 +234</span>
+            <input id="phone-input" type="tel" class="field-input phone-field" placeholder="801 234 5678" maxlength="11" />
+          </div>
+          <p class="field-hint">We'll send a verification code to this number</p>
+          <button class="btn-primary full-width" onclick="sendOtp()">Send OTP</button>
+        </div>
+        <p class="login-footer">By continuing, you agree to our <span class="link-text">Terms of Service</span> and <span class="link-text">Privacy Policy</span></p>
+      </div>
+    </div>
+
+    <!-- OTP -->
+    <div id="otp" class="screen">
+      <div class="screen-header">
+        <div class="back-btn" onclick="showScreen('login')">&#8592;</div>
+        <div class="header-icon">🔐</div>
+        <h2>Verify OTP</h2>
+        <p id="otp-hint">Enter the 6-digit code sent to your number</p>
+      </div>
+      <div class="screen-body">
+        <div class="card">
+          <div class="otp-boxes" id="otp-boxes">
+            <input type="tel" class="otp-box" maxlength="1" />
+            <input type="tel" class="otp-box" maxlength="1" />
+            <input type="tel" class="otp-box" maxlength="1" />
+            <input type="tel" class="otp-box" maxlength="1" />
+            <input type="tel" class="otp-box" maxlength="1" />
+            <input type="tel" class="otp-box" maxlength="1" />
+          </div>
+          <div class="resend-row">
+            <span id="otp-timer" class="otp-timer">Resend in 30s</span>
+            <button id="resend-btn" class="btn-link hidden" onclick="resendOtp()">Resend OTP</button>
+          </div>
+          <button class="btn-primary full-width" onclick="verifyOtp()">Verify &amp; Continue</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROFILE SETUP -->
+    <div id="profile-setup" class="screen">
+      <div class="screen-header">
+        <div class="header-icon">👤</div>
+        <h2>Set Up Profile</h2>
+        <p>Tell us about yourself</p>
+      </div>
+      <div class="screen-body">
+        <div class="card">
+          <div class="avatar-upload-wrap">
+            <div class="avatar-circle large" id="setup-avatar">SO</div>
+            <button class="btn-outline small" onclick="document.getElementById('avatar-upload').click()">Upload Photo</button>
+            <input type="file" id="avatar-upload" accept="image/*" class="hidden" />
+          </div>
+          <label class="field-label">Full Name</label>
+          <input type="text" class="field-input" id="setup-name" placeholder="e.g. Samuel Okafor" value="Samuel Okafor" />
+          <label class="field-label" style="margin-top:14px;">Age</label>
+          <input type="number" class="field-input" id="setup-age" placeholder="e.g. 28" value="28" />
+          <label class="field-label" style="margin-top:14px;">Gender</label>
+          <select class="field-input" id="setup-gender">
+            <option value="male" selected>Male</option>
+            <option value="female">Female</option>
+            <option value="other">Other</option>
+          </select>
+          <button class="btn-primary full-width" style="margin-top:20px;" onclick="completeSetup()">Save &amp; Continue</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="dashboard" class="screen">
+      <div class="screen-header dashboard-header">
+        <div class="header-top-row">
+          <div>
+            <p class="header-greeting" id="dash-greeting">Good morning 👋</p>
+            <h2 id="dash-name">Samuel Okafor</h2>
+          </div>
+          <div class="online-toggle-wrap">
+            <span id="online-label" class="online-label online">ONLINE</span>
+            <label class="toggle-switch">
+              <input type="checkbox" id="online-toggle" checked onchange="toggleOnlineStatus(this)" />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+        <div class="location-row" id="location-row">
+          <span class="location-dot"></span>
+          <span class="location-text">📍 Location tracking active</span>
+        </div>
+      </div>
+      <div class="screen-body">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">📋</div>
+            <div class="stat-value" id="stat-assigned">3</div>
+            <div class="stat-label">Assigned</div>
+          </div>
+          <div class="stat-card accent">
+            <div class="stat-icon">🚴</div>
+            <div class="stat-value" id="stat-active">1</div>
+            <div class="stat-label">Active</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">✅</div>
+            <div class="stat-value" id="stat-completed">1</div>
+            <div class="stat-label">Completed</div>
+          </div>
+          <div class="stat-card success">
+            <div class="stat-icon">₦</div>
+            <div class="stat-value" id="stat-earnings">16.2k</div>
+            <div class="stat-label">Today</div>
+          </div>
+        </div>
+        <div class="card escrow-card" onclick="showScreen('earnings')">
+          <div class="escrow-row">
+            <div>
+              <div class="escrow-label">⏳ Escrow Pending Release</div>
+              <div class="escrow-amount" id="escrow-amount">&#8358;25,000</div>
+            </div>
+            <div class="escrow-arrow">&#8250;</div>
+          </div>
+        </div>
+        <div class="section-title-row">
+          <h3 class="section-title">🔴 Priority Medical Orders</h3>
+          <span class="see-all" onclick="showScreen('orders')">See all</span>
+        </div>
+        <div id="priority-orders-list"></div>
+        <div class="section-title-row">
+          <h3 class="section-title">❄️ Temperature-Sensitive</h3>
+        </div>
+        <div id="cold-orders-list"></div>
+        <div class="section-title-row">
+          <h3 class="section-title">🚨 Emergency Marked</h3>
+        </div>
+        <div id="emergency-orders-list"></div>
+        <div style="height:80px;"></div>
+      </div>
+    </div>
+
+    <!-- ORDERS LIST -->
+    <div id="orders" class="screen">
+      <div class="screen-header">
+        <h2>All Orders</h2>
+        <p>Your assigned deliveries</p>
+      </div>
+      <div class="screen-body">
+        <div class="filter-tabs">
+          <button class="filter-tab active" data-filter="all" onclick="filterOrders('all',this)">All</button>
+          <button class="filter-tab" data-filter="assigned" onclick="filterOrders('assigned',this)">Assigned</button>
+          <button class="filter-tab" data-filter="in_progress" onclick="filterOrders('in_progress',this)">Active</button>
+          <button class="filter-tab" data-filter="delivered" onclick="filterOrders('delivered',this)">Done</button>
+        </div>
+        <div id="orders-list"></div>
+        <div style="height:80px;"></div>
+      </div>
+    </div>
+
+    <!-- ORDER DETAIL -->
+    <div id="order-detail" class="screen">
+      <div class="screen-header">
+        <div class="back-btn" onclick="goBack()">&#8592;</div>
+        <h2 id="detail-order-id">ORD-001</h2>
+        <p id="detail-status-label">Assigned</p>
+      </div>
+      <div class="screen-body" id="order-detail-body">
+        <div style="height:80px;"></div>
+      </div>
+    </div>
+
+    <!-- MEDICAL SAFETY CHECKLIST -->
+    <div id="checklist" class="screen">
+      <div class="screen-header">
+        <div class="back-btn" onclick="goBack()">&#8592;</div>
+        <div class="header-icon">✅</div>
+        <h2>Safety Checklist</h2>
+        <p>Complete before pickup</p>
+      </div>
+      <div class="screen-body">
+        <div class="card">
+          <div class="warning-banner">⚠️ Cannot proceed without completing all checks</div>
+          <div id="checklist-items"></div>
+          <button class="btn-primary full-width" id="checklist-proceed-btn" disabled onclick="proceedFromChecklist()">Confirm &amp; Proceed to Pickup</button>
+        </div>
+        <div style="height:80px;"></div>
+      </div>
+    </div>
+
+    <!-- NAVIGATION SCREEN -->
+    <div id="navigation" class="screen">
+      <div class="screen-header">
+        <div class="back-btn" onclick="goBack()">&#8592;</div>
+        <div class="header-icon">🗺️</div>
+        <h2>Navigation</h2>
+        <p id="nav-order-id">ORD-001</p>
+      </div>
+      <div class="screen-body">
+        <div class="card nav-map-card">
+          <div class="map-placeholder">
+            <div class="map-pin">📍</div>
+            <div class="map-text">Map View</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="nav-detail-row">
+            <div class="nav-icon-lg">📍</div>
+            <div class="nav-info">
+              <div class="nav-label">Destination</div>
+              <div class="nav-value" id="nav-address">14 Adeola Odeku St, VI</div>
+            </div>
+          </div>
+          <div class="nav-stats-row">
+            <div class="nav-stat">
+              <div class="nav-stat-val" id="nav-distance">3.2 km</div>
+              <div class="nav-stat-label">Distance</div>
+            </div>
+            <div class="nav-stat">
+              <div class="nav-stat-val" id="nav-eta">12 mins</div>
+              <div class="nav-stat-label">ETA</div>
+            </div>
+            <div class="nav-stat">
+              <div class="nav-traffic-dot green" id="nav-traffic-dot"></div>
+              <div class="nav-stat-label" id="nav-traffic-text">Clear</div>
+            </div>
+          </div>
+          <button class="btn-primary full-width" onclick="openGoogleMaps()">🗺️ Open in Google Maps</button>
+        </div>
+        <button class="btn-success full-width" onclick="showConfirmDelivery()">📦 Arrived – Confirm Delivery</button>
+        <div style="height:80px;"></div>
+      </div>
+    </div>
+
+    <!-- CONFIRM DELIVERY -->
+    <div id="confirm-delivery" class="screen">
+      <div class="screen-header">
+        <div class="back-btn" onclick="goBack()">&#8592;</div>
+        <div class="header-icon">📦</div>
+        <h2>Confirm Delivery</h2>
+        <p id="confirm-order-id">ORD-001</p>
+      </div>
+      <div class="screen-body">
+        <div class="card confirm-step">
+          <div class="step-header">
+            <span class="step-badge" id="sig-badge">1</span>
+            <span class="step-title">Patient Signature</span>
+            <span class="step-check hidden" id="sig-check">✅</span>
+          </div>
+          <canvas id="signature-canvas" width="340" height="160"></canvas>
+          <div class="canvas-actions">
+            <button class="btn-outline small" onclick="clearSignature()">Clear</button>
+            <button class="btn-primary small" onclick="saveSignature()">Save Signature</button>
+          </div>
+        </div>
+        <div class="card confirm-step">
+          <div class="step-header">
+            <span class="step-badge" id="photo-badge">2</span>
+            <span class="step-title">Delivery Photo</span>
+            <span class="step-check hidden" id="photo-check">✅</span>
+          </div>
+          <div id="photo-preview-wrap" class="photo-preview-wrap empty" onclick="document.getElementById('delivery-photo-input').click()">
+            <span id="photo-preview-placeholder">📷 Tap to upload photo</span>
+            <img id="delivery-photo-preview" class="hidden" alt="Delivery photo" />
+          </div>
+          <input type="file" id="delivery-photo-input" accept="image/*" capture="environment" class="hidden" onchange="handleDeliveryPhoto(event)" />
+        </div>
+        <div class="card confirm-step">
+          <div class="step-header">
+            <span class="step-badge" id="otp-d-badge">3</span>
+            <span class="step-title">Patient OTP (4-digit)</span>
+            <span class="step-check hidden" id="delivery-otp-check">✅</span>
+          </div>
+          <div class="otp-boxes four" id="delivery-otp-boxes">
+            <input type="tel" class="otp-box" maxlength="1" />
+            <input type="tel" class="otp-box" maxlength="1" />
+            <input type="tel" class="otp-box" maxlength="1" />
+            <input type="tel" class="otp-box" maxlength="1" />
+          </div>
+          <button class="btn-outline small" style="margin-top:8px;" onclick="verifyDeliveryOtp()">Verify OTP</button>
+        </div>
+        <div class="card confirm-step">
+          <div class="step-header">
+            <span class="step-badge" id="cond-badge">4</span>
+            <span class="step-title">Condition Confirmation</span>
+            <span class="step-check hidden" id="cond-check">✅</span>
+          </div>
+          <label class="checkbox-label">
+            <input type="checkbox" id="condition-checkbox" onchange="checkCondition(this)" />
+            <span>Patient confirmed medicines received in good condition</span>
+          </label>
+        </div>
+        <button class="btn-success full-width" id="complete-delivery-btn" disabled onclick="completeDelivery()">🎉 Complete Delivery</button>
+        <div style="height:80px;"></div>
+      </div>
+    </div>
+
+    <!-- NURSE ASSIST MODE -->
+    <div id="nurse-assist" class="screen">
+      <div class="screen-header">
+        <div class="back-btn" onclick="goBack()">&#8592;</div>
+        <div class="header-icon">👩‍⚕️</div>
+        <h2>Nurse Assist Mode</h2>
+        <p id="nurse-order-id">ORD-001</p>
+      </div>
+      <div class="screen-body">
+        <div class="card nurse-alert-card">
+          <div class="nurse-alert-icon">💉</div>
+          <div class="nurse-alert-text">This delivery requires nurse administration</div>
+        </div>
+        <div class="card">
+          <h3 class="card-section-title">💉 Injection Kit Checklist</h3>
+          <label class="checkbox-label"><input type="checkbox" class="nurse-check" /> Syringes included</label>
+          <label class="checkbox-label"><input type="checkbox" class="nurse-check" /> Needles (correct gauge)</label>
+          <label class="checkbox-label"><input type="checkbox" class="nurse-check" /> Alcohol swabs included</label>
+          <label class="checkbox-label"><input type="checkbox" class="nurse-check" /> Sharps disposal container</label>
+          <label class="checkbox-label"><input type="checkbox" class="nurse-check" /> Gloves included</label>
+        </div>
+        <div class="card">
+          <h3 class="card-section-title">📞 Nurse Contact</h3>
+          <div class="contact-row">
+            <div class="contact-info">
+              <div class="contact-name">Assigned Nurse</div>
+              <div class="contact-phone" id="nurse-phone-display">+234 802 345 6789</div>
+            </div>
+            <button class="call-btn" onclick="callNurse()">📞 Call</button>
+          </div>
+        </div>
+        <div class="card">
+          <label class="checkbox-label">
+            <input type="checkbox" id="consent-checkbox" />
+            <span>Patient/family consent for nurse administration verified</span>
+          </label>
+          <label class="checkbox-label" style="margin-top:8px;">
+            <input type="checkbox" id="handover-checkbox" />
+            <span>Medicines handed over to nurse confirmed</span>
+          </label>
+        </div>
+        <button class="btn-success full-width" onclick="confirmNurseHandover()">✅ Confirm Medicine Handover to Nurse</button>
+        <button class="btn-emergency full-width" onclick="showScreen('emergency')">🚨 Emergency Support</button>
+        <div style="height:80px;"></div>
+      </div>
+    </div>
+
+    <!-- EMERGENCY SUPPORT -->
+    <div id="emergency" class="screen">
+      <div class="screen-header emergency-header">
+        <div class="back-btn light" onclick="goBack()">&#8592;</div>
+        <div class="header-icon">🚨</div>
+        <h2>Emergency Support</h2>
+        <p>Select the type of emergency</p>
+      </div>
+      <div class="screen-body">
+        <div class="emergency-grid">
+          <button class="emergency-btn call" onclick="triggerEmergency('call')">
+            <div class="emergency-btn-icon">📞</div>
+            <div class="emergency-btn-label">Call Support</div>
+          </button>
+          <button class="emergency-btn medical" onclick="triggerEmergency('medical')">
+            <div class="emergency-btn-icon">🏥</div>
+            <div class="emergency-btn-label">Report Medical Issue</div>
+          </button>
+          <button class="emergency-btn aggressive" onclick="triggerEmergency('aggressive')">
+            <div class="emergency-btn-icon">⚠️</div>
+            <div class="emergency-btn-label">Report Aggressive Situation</div>
+          </button>
+          <button class="emergency-btn damage" onclick="triggerEmergency('damage')">
+            <div class="emergency-btn-icon">💊</div>
+            <div class="emergency-btn-label">Report Medicine Damage</div>
+          </button>
+        </div>
+        <div id="emergency-confirm" class="emergency-confirm hidden"></div>
+        <div style="height:80px;"></div>
+      </div>
+    </div>
+
+    <!-- EARNINGS -->
+    <div id="earnings" class="screen">
+      <div class="screen-header">
+        <h2>💰 Earnings</h2>
+        <p>Your financial summary</p>
+      </div>
+      <div class="screen-body">
+        <div class="earnings-hero-card">
+          <div class="earnings-hero-label">Today's Earnings</div>
+          <div class="earnings-hero-amount" id="earnings-today">&#8358;16,200</div>
+          <div class="earnings-hero-sub" id="earnings-orders-today">4 orders completed</div>
+        </div>
+        <div class="stats-grid two">
+          <div class="stat-card">
+            <div class="stat-icon">📅</div>
+            <div class="stat-value" id="earnings-weekly-val">&#8358;89.5k</div>
+            <div class="stat-label">This Week</div>
+          </div>
+          <div class="stat-card accent">
+            <div class="stat-icon">⏳</div>
+            <div class="stat-value" id="earnings-escrow-val">&#8358;25k</div>
+            <div class="stat-label">Escrow Held</div>
+          </div>
+          <div class="stat-card success">
+            <div class="stat-icon">✅</div>
+            <div class="stat-value" id="earnings-released-val">&#8358;64.5k</div>
+            <div class="stat-label">Released</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">🎁</div>
+            <div class="stat-value" id="earnings-incentives-val">&#8358;5k</div>
+            <div class="stat-label">Incentives</div>
+          </div>
+        </div>
+        <div class="card">
+          <h3 class="card-section-title">📊 Commission Breakdown</h3>
+          <div class="commission-row">
+            <span>Gross Earnings (Today)</span>
+            <span id="comm-gross">&#8358;18,409</span>
+          </div>
+          <div class="commission-row">
+            <span>Platform Commission (12%)</span>
+            <span id="comm-deducted" class="text-error">&#8722;&#8358;2,209</span>
+          </div>
+          <div class="commission-row bold">
+            <span>Net Earnings</span>
+            <span id="comm-net">&#8358;16,200</span>
+          </div>
+        </div>
+        <div class="card">
+          <h3 class="card-section-title">🕐 Payment History</h3>
+          <div id="payment-history-table"></div>
+        </div>
+        <div style="height:80px;"></div>
+      </div>
+    </div>
+
+    <!-- PERFORMANCE -->
+    <div id="performance" class="screen">
+      <div class="screen-header">
+        <div class="back-btn" onclick="showScreen('profile')">&#8592;</div>
+        <h2>📈 Performance</h2>
+        <p>Your delivery metrics</p>
+      </div>
+      <div class="screen-body">
+        <div class="card perf-top-card">
+          <div class="perf-circles-row">
+            <div class="perf-circle-wrap">
+              <svg viewBox="0 0 100 100" class="perf-circle-svg">
+                <circle cx="50" cy="50" r="40" class="circle-bg" />
+                <circle cx="50" cy="50" r="40" class="circle-fill ontime" id="ontime-circle" style="stroke-dasharray: 0 251;" />
+              </svg>
+              <div class="perf-circle-label">
+                <div class="perf-circle-val" id="ontime-val">94%</div>
+                <div class="perf-circle-sub">On-Time</div>
+              </div>
+            </div>
+            <div class="rating-display">
+              <div class="rating-stars" id="rating-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+              <div class="rating-val" id="rating-val">4.8</div>
+              <div class="rating-label">Customer Rating</div>
+            </div>
+          </div>
+        </div>
+        <div class="stats-grid two">
+          <div class="stat-card">
+            <div class="stat-icon">📦</div>
+            <div class="stat-value" id="perf-total">156</div>
+            <div class="stat-label">Total Deliveries</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">❌</div>
+            <div class="stat-value" id="perf-cancel">2%</div>
+            <div class="stat-label">Cancellation Rate</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">⚠️</div>
+            <div class="stat-value" id="perf-failed">1</div>
+            <div class="stat-label">Failed Deliveries</div>
+          </div>
+          <div class="stat-card success">
+            <div class="stat-icon">🏆</div>
+            <div class="stat-value">Top 10%</div>
+            <div class="stat-label">Rank</div>
+          </div>
+        </div>
+        <div class="card">
+          <h3 class="card-section-title">📊 Monthly Performance</h3>
+          <div class="bar-chart" id="monthly-bar-chart"></div>
+          <div class="bar-chart-labels">
+            <span>Oct</span><span>Nov</span><span>Dec</span><span>Jan</span><span>Feb</span><span>Mar</span>
+          </div>
+        </div>
+        <div style="height:80px;"></div>
+      </div>
+    </div>
+
+    <!-- NOTIFICATIONS -->
+    <div id="notifications" class="screen">
+      <div class="screen-header">
+        <div class="back-btn" onclick="showScreen('dashboard')">&#8592;</div>
+        <h2>🔔 Notifications</h2>
+        <p id="notif-unread-label">3 unread</p>
+      </div>
+      <div class="screen-body">
+        <button class="btn-outline full-width small" style="margin-bottom:12px;" onclick="markAllRead()">Mark all as read</button>
+        <div id="notifications-list"></div>
+        <div style="height:80px;"></div>
+      </div>
+    </div>
+
+    <!-- PROFILE -->
+    <div id="profile" class="screen">
+      <div class="screen-header">
+        <h2>👤 Profile</h2>
+        <p>Your account details</p>
+      </div>
+      <div class="screen-body">
+        <div class="card profile-hero">
+          <div class="avatar-circle large" id="profile-avatar">SO</div>
+          <div class="profile-name" id="profile-name-display">Samuel Okafor</div>
+          <div class="profile-phone" id="profile-phone-display">+234 806 789 0123</div>
+          <div class="profile-status-row">
+            <span class="badge verified" id="profile-id-badge">✅ ID Verified</span>
+            <span class="badge kyc" id="profile-kyc-badge">✅ KYC Complete</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="profile-field-row">
+            <span class="profile-field-label">🔍 Background Check</span>
+            <span class="badge verified">Cleared</span>
+          </div>
+          <div class="profile-field-row">
+            <span class="profile-field-label">🏦 Bank Account</span>
+            <span class="profile-field-val" id="profile-bank">****1234 – GTBank</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="profile-field-row">
+            <span class="profile-field-label">Availability Status</span>
+            <div class="online-toggle-wrap">
+              <span id="profile-online-label" class="online-label online">ONLINE</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="profile-online-toggle" checked onchange="toggleOnlineStatusProfile(this)" />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <h3 class="card-section-title">📄 Document Upload</h3>
+          <div class="doc-upload-row">
+            <span>Government ID</span>
+            <button class="btn-outline small" onclick="document.getElementById('doc-id').click()">Upload</button>
+            <input type="file" id="doc-id" class="hidden" accept="image/*,.pdf" />
+          </div>
+          <div class="doc-upload-row">
+            <span>Rider's License</span>
+            <button class="btn-outline small" onclick="document.getElementById('doc-license').click()">Upload</button>
+            <input type="file" id="doc-license" class="hidden" accept="image/*,.pdf" />
+          </div>
+          <div class="doc-upload-row">
+            <span>Proof of Address</span>
+            <button class="btn-outline small" onclick="document.getElementById('doc-address').click()">Upload</button>
+            <input type="file" id="doc-address" class="hidden" accept="image/*,.pdf" />
+          </div>
+        </div>
+        <div class="card">
+          <button class="profile-menu-item" onclick="showScreen('performance')">📈 Performance Metrics ›</button>
+          <button class="profile-menu-item" onclick="showScreen('incident')">⚠️ Report Incident ›</button>
+          <button class="profile-menu-item" onclick="showScreen('coldchain')">❄️ Cold Chain Tracking ›</button>
+          <button class="profile-menu-item" onclick="showScreen('notifications')">🔔 Notifications ›</button>
+        </div>
+        <button class="btn-outline full-width danger" onclick="logout()">🚪 Logout</button>
+        <div style="height:80px;"></div>
+      </div>
+    </div>
+
+    <!-- INCIDENT REPORT -->
+    <div id="incident" class="screen">
+      <div class="screen-header">
+        <div class="back-btn" onclick="goBack()">&#8592;</div>
+        <div class="header-icon">⚠️</div>
+        <h2>Incident Report</h2>
+        <p>Report an issue with a delivery</p>
+      </div>
+      <div class="screen-body">
+        <div class="card">
+          <label class="field-label">Incident Type</label>
+          <select class="field-input" id="incident-type">
+            <option value="">-- Select type --</option>
+            <option value="medicine_damaged">Medicine Damaged</option>
+            <option value="patient_unavailable">Patient Unavailable</option>
+            <option value="address_wrong">Address Wrong / Incorrect</option>
+            <option value="hostile_situation">Hostile Situation</option>
+            <option value="cold_chain_breach">Cold Chain Breach</option>
+          </select>
+          <label class="field-label" style="margin-top:14px;">Order Reference</label>
+          <input type="text" class="field-input" id="incident-order-ref" placeholder="e.g. ORD-001" />
+          <label class="field-label" style="margin-top:14px;">Description</label>
+          <textarea class="field-input" id="incident-description" rows="4" placeholder="Describe what happened..."></textarea>
+          <label class="field-label" style="margin-top:14px;">Supporting Photo</label>
+          <div class="photo-preview-wrap empty" id="incident-photo-wrap" onclick="document.getElementById('incident-photo').click()">
+            <span id="incident-photo-placeholder">📷 Tap to attach photo</span>
+            <img id="incident-photo-preview" class="hidden" alt="Incident photo" />
+          </div>
+          <input type="file" id="incident-photo" class="hidden" accept="image/*" onchange="handleIncidentPhoto(event)" />
+          <button class="btn-primary full-width" style="margin-top:20px;" onclick="submitIncident()">📤 Submit Report</button>
+        </div>
+        <div id="incident-success" class="success-banner hidden">✅ Incident report submitted successfully!</div>
+        <div style="height:80px;"></div>
+      </div>
+    </div>
+
+    <!-- COLD CHAIN TRACKING -->
+    <div id="coldchain" class="screen">
+      <div class="screen-header">
+        <div class="back-btn" onclick="goBack()">&#8592;</div>
+        <div class="header-icon">❄️</div>
+        <h2>Cold Chain Tracking</h2>
+        <p>Insulin / Vaccine storage monitoring</p>
+      </div>
+      <div class="screen-body">
+        <div class="card">
+          <div class="toggle-field-row">
+            <span class="field-label" style="margin-bottom:0;">Mark as Temperature-Sensitive</span>
+            <label class="toggle-switch small">
+              <input type="checkbox" id="temp-sensitive-toggle" onchange="toggleTempSensitive(this)" />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div id="coldchain-form" class="hidden" style="margin-top:16px;">
+            <label class="field-label">Storage Container ID</label>
+            <input type="text" class="field-input" id="container-id" placeholder="e.g. CT-2024-001" />
+            <label class="field-label" style="margin-top:14px;">Current Temperature Reading (°C)</label>
+            <input type="number" class="field-input" id="temp-reading" placeholder="e.g. 4.5" step="0.1" min="-20" max="25" oninput="checkTempReading(this)" />
+            <div id="temp-warning" class="hidden"></div>
+            <label class="field-label" style="margin-top:14px;">Temperature Confirmation Photo</label>
+            <div class="photo-preview-wrap empty" id="coldchain-photo-wrap" onclick="document.getElementById('coldchain-photo').click()">
+              <span id="coldchain-photo-placeholder">📷 Upload temperature gauge photo</span>
+              <img id="coldchain-photo-preview" class="hidden" alt="Cold chain photo" />
+            </div>
+            <input type="file" id="coldchain-photo" class="hidden" accept="image/*" onchange="handleColdchainPhoto(event)" />
+            <button class="btn-primary full-width" style="margin-top:20px;" onclick="submitColdChain()">❄️ Submit Cold Chain Record</button>
+          </div>
+        </div>
+        <div id="coldchain-success" class="success-banner hidden">✅ Cold chain record submitted successfully!</div>
+        <div style="height:80px;"></div>
+      </div>
+    </div>
+
+    <!-- BOTTOM NAV -->
+    <nav class="bottom-nav" id="bottom-nav">
+      <button class="nav-item active" data-screen="dashboard" onclick="showScreen('dashboard')">
+        <span class="nav-icon">🏠</span>
+        <span class="nav-label">Home</span>
+      </button>
+      <button class="nav-item" data-screen="orders" onclick="showScreen('orders')">
+        <span class="nav-icon">📋</span>
+        <span class="nav-label">Orders</span>
+        <span class="nav-badge" id="orders-badge">3</span>
+      </button>
+      <button class="nav-item" data-screen="earnings" onclick="showScreen('earnings')">
+        <span class="nav-icon">💰</span>
+        <span class="nav-label">Earnings</span>
+      </button>
+      <button class="nav-item" data-screen="profile" onclick="showScreen('profile')">
+        <span class="nav-icon">👤</span>
+        <span class="nav-label">Profile</span>
+        <span class="nav-badge notif-badge" id="notif-badge">3</span>
+      </button>
+    </nav>
+
+  </div><!-- /#app-frame -->
+
+  <!-- Inactivity Warning Modal -->
+  <div id="inactivity-modal" class="modal-overlay hidden">
+    <div class="modal-box">
+      <div class="modal-icon">⏰</div>
+      <h3>Session Expiring</h3>
+      <p>You will be logged out in <span id="inactivity-countdown">30</span>s due to inactivity.</p>
+      <button class="btn-primary full-width" onclick="resetInactivityTimer()">Stay Logged In</button>
+    </div>
+  </div>
+
+  <!-- Toast container -->
+  <div id="toast-container"></div>
+
+  <script src="app.js"></script>
+</body>
 </html>
