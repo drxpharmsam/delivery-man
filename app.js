@@ -1320,6 +1320,39 @@ function setupOtpBoxes() {
   });
 }
 
+/* ── Vehicle Details ─────────────────────────────────────────── */
+function saveVehicleDetails() {
+  const reg = document.getElementById('vehicle-reg').value.trim();
+  if (!reg) { showToast('Please enter a registration number', 'error'); return; }
+  const banner = document.getElementById('vehicle-success');
+  banner.classList.remove('hidden');
+  showToast('Vehicle details saved!', 'success');
+  setTimeout(() => banner.classList.add('hidden'), 4000);
+}
+
+/* ── Payout ──────────────────────────────────────────────────── */
+function setPayoutAmount(amount) {
+  const inp = document.getElementById('payout-amount-input');
+  if (inp) inp.value = amount;
+}
+
+function submitPayout() {
+  const inp = document.getElementById('payout-amount-input');
+  const val = parseFloat(inp ? inp.value : 0);
+  if (!val || val < 100) { showToast('Minimum withdrawal is ₹100', 'error'); return; }
+  if (val > 50000)        { showToast('Maximum ₹50,000 per day', 'error'); return; }
+  const banner = document.getElementById('payout-success');
+  banner.classList.remove('hidden');
+  showToast('Payout of ' + fmtFull(val) + ' requested!', 'success');
+  if (inp) inp.value = '';
+  setTimeout(() => banner.classList.add('hidden'), 6000);
+}
+
+/* ── Support FAQ toggle ──────────────────────────────────────── */
+function toggleFaq(item) {
+  item.classList.toggle('open');
+}
+
 /* ── Boot ────────────────────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', () => {
   setupOtpBoxes();

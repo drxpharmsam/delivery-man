@@ -372,6 +372,15 @@ textarea.field-input { resize: vertical; }
 /* ---------- Filter Tabs ---------- */
 .filter-tabs { display: flex; gap: 8px; margin-bottom: 14px; overflow-x: auto; padding-bottom: 2px; }
 .filter-tabs::-webkit-scrollbar { display: none; }
+/* Sticky tab bar (sits between screen-header and screen-body) */
+.filter-tabs-bar {
+  display: flex; gap: 8px; overflow-x: auto;
+  padding: 10px 16px 10px;
+  background: var(--bg-color);
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--c1);
+}
+.filter-tabs-bar::-webkit-scrollbar { display: none; }
 .filter-tab {
   padding: 7px 16px; border-radius: 99px;
   border: 1.5px solid var(--c2); background: var(--white);
@@ -705,7 +714,13 @@ input:checked + .toggle-switch.small .toggle-slider::before { transform: transla
   background: rgba(10,133,140,0.09);
 }
 
-.nav-icon  { font-size: 22px; display: block; line-height: 1; position: relative; z-index: 1; }
+.nav-icon  {
+  display: flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px;
+  position: relative; z-index: 1;
+  color: var(--gray-text);
+}
+.nav-item.active .nav-icon { color: var(--c4); }
 .nav-label {
   font-size: 11px; font-weight: 700;
   color: var(--gray-text);
@@ -882,3 +897,53 @@ input:checked + .toggle-switch.small .toggle-slider::before { transform: transla
   height: calc(68px + env(safe-area-inset-bottom, 4px));
   flex-shrink: 0;
 }
+
+/* ---------- Payout Screen ---------- */
+.payout-summary-card { background: linear-gradient(135deg, var(--c5), var(--c4)); border: none; }
+.payout-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.payout-row:last-child { margin-bottom: 0; }
+.payout-label { color: rgba(255,255,255,0.85); font-size: 13px; font-weight: 600; }
+.payout-label.bold { color: #fff; font-weight: 800; font-size: 14px; }
+.payout-amount { color: #fff; font-size: 18px; font-weight: 800; }
+.payout-amount.escrow { color: rgba(255,255,255,0.7); font-size: 15px; }
+.payout-amount.bold { font-size: 20px; }
+.payout-divider { height: 1px; background: rgba(255,255,255,0.25); margin: 10px 0; }
+.payout-bank-row { display: flex; align-items: center; gap: 12px; }
+.bank-icon { font-size: 28px; }
+.bank-name { font-size: 14px; font-weight: 700; color: #1F2937; }
+.bank-acc { font-size: 12px; color: var(--gray-text); margin-top: 2px; }
+.payout-quick-btns { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.payout-quick-btn {
+  padding: 6px 14px; border-radius: 99px;
+  border: 1.5px solid var(--c2); background: var(--white);
+  font-family: inherit; font-size: 13px; font-weight: 700;
+  color: var(--c4); cursor: pointer;
+  transition: all 0.2s;
+}
+.payout-quick-btn:hover { background: var(--c4); color: var(--white); border-color: var(--c4); }
+.field-hint { font-size: 11px; color: var(--gray-text); margin-top: 6px; }
+
+/* ---------- Support Screen ---------- */
+.support-contact-btn {
+  display: flex; align-items: center; gap: 12px;
+  width: 100%; padding: 12px 4px;
+  border: none; background: none; cursor: pointer;
+  font-family: inherit; text-align: left;
+  border-bottom: 1px solid var(--c1);
+  transition: background 0.15s;
+}
+.support-contact-btn:last-child { border-bottom: none; }
+.support-contact-btn:hover { background: var(--c1); border-radius: 12px; }
+.support-btn-icon { font-size: 26px; flex-shrink: 0; }
+.support-btn-title { font-size: 14px; font-weight: 700; color: #1F2937; }
+.support-btn-sub { font-size: 12px; color: var(--gray-text); margin-top: 2px; }
+.support-contact-btn > span:last-child { margin-left: auto; color: var(--gray-text); font-size: 18px; }
+
+/* ---------- FAQ ---------- */
+.faq-item { padding: 12px 0; border-bottom: 1px solid var(--c1); cursor: pointer; }
+.faq-item:last-child { border-bottom: none; }
+.faq-q { font-size: 14px; font-weight: 700; color: #1F2937; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.faq-chevron { color: var(--c4); transition: transform 0.25s; flex-shrink: 0; }
+.faq-item.open .faq-chevron { transform: rotate(180deg); }
+.faq-a { display: none; font-size: 13px; color: var(--gray-text); line-height: 1.6; margin-top: 8px; }
+.faq-item.open .faq-a { display: block; }
