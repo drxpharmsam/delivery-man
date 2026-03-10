@@ -34,8 +34,8 @@ html, body { height: 100%; background: var(--bg-color); font-family: 'Plus Jakar
   flex-direction: column;
   width: 100%;
   max-width: 400px;
+  height: 100vh; /* fallback for browsers without svh support */
   /* 100svh = small viewport height (excludes browser chrome on mobile) */
-  height: 100vh;
   height: 100svh;
   margin: 0 auto;
   background: var(--bg-color);
