@@ -123,6 +123,169 @@
       </div>
     </div>
 
+    <!-- KYC DETAILS (new user onboarding step 1) -->
+    <div id="kyc-details" class="screen">
+      <div class="screen-header">
+        <div class="header-icon">📋</div>
+        <h2>Personal Details</h2>
+        <p>Step 1 of 3 – Your information</p>
+      </div>
+      <div class="screen-body">
+        <div class="card">
+          <div class="onboarding-steps">
+            <div class="step-pip active"></div>
+            <div class="step-pip"></div>
+            <div class="step-pip"></div>
+          </div>
+          <label class="field-label">Full Name *</label>
+          <input type="text" class="field-input" id="kyc-name" placeholder="As on Aadhaar card" autocomplete="name" />
+          <label class="field-label" style="margin-top:14px;">Date of Birth *</label>
+          <input type="date" class="field-input" id="kyc-dob" />
+          <label class="field-label" style="margin-top:14px;">Full Address *</label>
+          <textarea class="field-input" id="kyc-address" rows="3" placeholder="House No., Street, City, State, PIN"></textarea>
+          <label class="field-label" style="margin-top:14px;">Aadhaar Card Number *</label>
+          <input type="tel" class="field-input aadhaar-input" id="kyc-aadhaar" placeholder="XXXX XXXX XXXX" maxlength="14" oninput="formatAadhaar(this)" />
+          <p class="field-hint">12-digit Aadhaar number for identity verification</p>
+          <label class="field-label" style="margin-top:14px;">Upload Aadhaar – Front Side *</label>
+          <div class="photo-preview-wrap empty" id="kyc-aadhaar-front-wrap" onclick="document.getElementById('kyc-aadhaar-front').click()">
+            <span id="kyc-aadhaar-front-placeholder">📷 Tap to upload front side</span>
+            <img id="kyc-aadhaar-front-preview" class="hidden" alt="Aadhaar front" />
+          </div>
+          <input type="file" id="kyc-aadhaar-front" class="hidden" accept="image/*" onchange="handleKycAadhaarFront(event)" />
+          <label class="field-label" style="margin-top:14px;">Upload Aadhaar – Back Side</label>
+          <div class="photo-preview-wrap empty" id="kyc-aadhaar-back-wrap" onclick="document.getElementById('kyc-aadhaar-back').click()">
+            <span id="kyc-aadhaar-back-placeholder">📷 Tap to upload back side</span>
+            <img id="kyc-aadhaar-back-preview" class="hidden" alt="Aadhaar back" />
+          </div>
+          <input type="file" id="kyc-aadhaar-back" class="hidden" accept="image/*" onchange="handleKycAadhaarBack(event)" />
+          <button class="btn-primary full-width" style="margin-top:20px;" onclick="completeKycDetails()">Continue &#8594;</button>
+        </div>
+        <div class="nav-spacer"></div>
+      </div>
+    </div>
+
+    <!-- VEHICLE SELECTION (new user onboarding step 2) -->
+    <div id="vehicle-selection" class="screen">
+      <div class="screen-header">
+        <div class="back-btn" onclick="showScreen('kyc-details')">&#8592;</div>
+        <div class="header-icon">🚗</div>
+        <h2>Vehicle Type</h2>
+        <p>Step 2 of 3 – Your vehicle</p>
+      </div>
+      <div class="screen-body">
+        <div class="card">
+          <div class="onboarding-steps">
+            <div class="step-pip done"></div>
+            <div class="step-pip active"></div>
+            <div class="step-pip"></div>
+          </div>
+          <p style="text-align:center; font-size:14px; color:#374151; margin-bottom:20px; font-weight:600;">Select the type of vehicle you will use for deliveries</p>
+          <div class="vehicle-type-grid">
+            <button class="vehicle-type-card" onclick="selectVehicleType('ev')">
+              <div class="vehicle-type-icon">⚡</div>
+              <div class="vehicle-type-title">Electric Vehicle</div>
+              <div class="vehicle-type-sub">E-Bike, E-Scooter,<br/>E-Rickshaw, EV Car</div>
+            </button>
+            <button class="vehicle-type-card" onclick="selectVehicleType('motor')">
+              <div class="vehicle-type-icon">🏍️</div>
+              <div class="vehicle-type-title">Motor Vehicle</div>
+              <div class="vehicle-type-sub">Bike, Scooter,<br/>Car, Tempo</div>
+            </button>
+          </div>
+          <p class="field-hint" style="margin-top:16px; text-align:center;">Electric vehicle riders skip the driving licence step</p>
+        </div>
+        <div class="nav-spacer"></div>
+      </div>
+    </div>
+
+    <!-- MOTOR VEHICLE DETAILS (new user onboarding step 3) -->
+    <div id="motor-vehicle-details" class="screen">
+      <div class="screen-header">
+        <div class="back-btn" onclick="showScreen('vehicle-selection')">&#8592;</div>
+        <div class="header-icon">🏍️</div>
+        <h2>Vehicle &amp; Licence</h2>
+        <p>Step 3 of 3 – Required documents</p>
+      </div>
+      <div class="screen-body">
+        <div class="card">
+          <div class="onboarding-steps">
+            <div class="step-pip done"></div>
+            <div class="step-pip done"></div>
+            <div class="step-pip active"></div>
+          </div>
+          <h3 class="card-section-title">🚗 Vehicle Information</h3>
+          <label class="field-label">Vehicle Type *</label>
+          <select class="field-input" id="mvd-vehicle-type">
+            <option value="">-- Select vehicle type --</option>
+            <option value="motorcycle">Motorcycle / Bike</option>
+            <option value="scooter">Scooter / Moped</option>
+            <option value="car">Car (4-Wheeler)</option>
+            <option value="auto">Auto Rickshaw</option>
+            <option value="tempo">Tempo / Mini Truck</option>
+          </select>
+          <label class="field-label" style="margin-top:14px;">Registration Number *</label>
+          <input type="text" class="field-input" id="mvd-reg-number" placeholder="e.g. MH 01 AB 1234" style="text-transform:uppercase;" />
+          <p class="field-hint">As shown on Registration Certificate (RC)</p>
+          <label class="field-label" style="margin-top:14px;">Make &amp; Model *</label>
+          <input type="text" class="field-input" id="mvd-make-model" placeholder="e.g. Honda Activa 6G" />
+          <label class="field-label" style="margin-top:14px;">Year of Manufacture *</label>
+          <input type="number" class="field-input" id="mvd-year" placeholder="e.g. 2022" min="2000" max="2030" />
+        </div>
+        <div class="card">
+          <h3 class="card-section-title">📄 Driving Licence Details</h3>
+          <label class="field-label">Licence Number *</label>
+          <input type="text" class="field-input" id="mvd-dl-number" placeholder="e.g. MH1420220012345" style="text-transform:uppercase;" />
+          <p class="field-hint">State code + RTO code + year + sequence (MoRTH format)</p>
+          <label class="field-label" style="margin-top:14px;">Licence Class *</label>
+          <select class="field-input" id="mvd-dl-class">
+            <option value="">-- Select licence class --</option>
+            <option value="MCWOG">MCWOG – Motorcycle Without Gear (Scooter/Moped)</option>
+            <option value="MCWG">MCWG – Motorcycle With Gear</option>
+            <option value="LMV-NT">LMV-NT – Light Motor Vehicle Non-Transport (Car)</option>
+            <option value="LMV">LMV – Light Motor Vehicle (Taxi/Cab)</option>
+            <option value="HPMV">HPMV – Heavy Passenger Motor Vehicle</option>
+            <option value="HTV">HTV – Heavy Transport Vehicle</option>
+          </select>
+          <label class="field-label" style="margin-top:14px;">Date of Issue *</label>
+          <input type="date" class="field-input" id="mvd-dl-issue" />
+          <label class="field-label" style="margin-top:14px;">Date of Expiry *</label>
+          <input type="date" class="field-input" id="mvd-dl-expiry" />
+          <label class="field-label" style="margin-top:14px;">Upload Driving Licence – Front *</label>
+          <div class="photo-preview-wrap empty" id="mvd-dl-front-wrap" onclick="document.getElementById('mvd-dl-front').click()">
+            <span id="mvd-dl-front-placeholder">📷 Tap to upload front of DL</span>
+            <img id="mvd-dl-front-preview" class="hidden" alt="DL front" />
+          </div>
+          <input type="file" id="mvd-dl-front" class="hidden" accept="image/*" onchange="handleMvdDlFront(event)" />
+          <label class="field-label" style="margin-top:14px;">Upload Driving Licence – Back</label>
+          <div class="photo-preview-wrap empty" id="mvd-dl-back-wrap" onclick="document.getElementById('mvd-dl-back').click()">
+            <span id="mvd-dl-back-placeholder">📷 Tap to upload back of DL</span>
+            <img id="mvd-dl-back-preview" class="hidden" alt="DL back" />
+          </div>
+          <input type="file" id="mvd-dl-back" class="hidden" accept="image/*" onchange="handleMvdDlBack(event)" />
+        </div>
+        <div class="card">
+          <h3 class="card-section-title">📄 Vehicle Documents</h3>
+          <div class="doc-upload-row">
+            <span>RC Book (Registration Certificate)</span>
+            <button class="btn-outline small" onclick="document.getElementById('mvd-rc').click()">Upload</button>
+            <input type="file" id="mvd-rc" class="hidden" accept="image/*,.pdf" />
+          </div>
+          <div class="doc-upload-row">
+            <span>Insurance Certificate</span>
+            <button class="btn-outline small" onclick="document.getElementById('mvd-insurance').click()">Upload</button>
+            <input type="file" id="mvd-insurance" class="hidden" accept="image/*,.pdf" />
+          </div>
+          <div class="doc-upload-row">
+            <span>PUC Certificate</span>
+            <button class="btn-outline small" onclick="document.getElementById('mvd-puc').click()">Upload</button>
+            <input type="file" id="mvd-puc" class="hidden" accept="image/*,.pdf" />
+          </div>
+        </div>
+        <button class="btn-primary full-width" onclick="completeMotorVehicleDetails()" style="margin-bottom:12px;">🚀 Complete Registration</button>
+        <div class="nav-spacer"></div>
+      </div>
+    </div>
+
     <!-- DASHBOARD -->
     <div id="dashboard" class="screen">
       <div class="screen-header dashboard-header">

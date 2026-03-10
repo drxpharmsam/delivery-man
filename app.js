@@ -348,11 +348,11 @@ function verifyOtp() {
   const code = Array.from(boxes).map(b => b.value).join('');
   if (code.length < 6) { showToast('Enter all 6 digits', 'error'); return; }
   // Demo: accept any 6-digit code
-  const saved = localStorage.getItem('dm_profile_done');
-  if (saved) {
+  const onboarded = localStorage.getItem('dm_onboarding_done') || localStorage.getItem('dm_profile_done');
+  if (onboarded) {
     finishLogin();
   } else {
-    showScreen('profile-setup');
+    showScreen('kyc-details');
   }
 }
 
@@ -1300,6 +1300,140 @@ function submitColdChain() {
   document.getElementById('coldchain-success').classList.remove('hidden');
   setTimeout(() => document.getElementById('coldchain-success').classList.add('hidden'), 4000);
   showToast('Cold chain record submitted ❄️', 'success');
+}
+
+/* ── KYC & Onboarding ────────────────────────────────────────── */
+function formatAadhaar(input) {
+  // Auto-format as XXXX XXXX XXXX
+  let v = input.value.replace(/\D/g, '').slice(0, 12);
+  const parts = [];
+  for (let i = 0; i < v.length; i += 4) parts.push(v.slice(i, i + 4));
+  input.value = parts.join(' ');
+}
+
+function handleKycAadhaarFront(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = document.getElementById('kyc-aadhaar-front-preview');
+    img.src = ev.target.result;
+    img.classList.remove('hidden');
+    document.getElementById('kyc-aadhaar-front-placeholder').classList.add('hidden');
+    document.getElementById('kyc-aadhaar-front-wrap').classList.remove('empty');
+  };
+  reader.readAsDataURL(file);
+}
+
+function handleKycAadhaarBack(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = document.getElementById('kyc-aadhaar-back-preview');
+    img.src = ev.target.result;
+    img.classList.remove('hidden');
+    document.getElementById('kyc-aadhaar-back-placeholder').classList.add('hidden');
+    document.getElementById('kyc-aadhaar-back-wrap').classList.remove('empty');
+  };
+  reader.readAsDataURL(file);
+}
+
+function completeKycDetails() {
+  const name    = document.getElementById('kyc-name').value.trim();
+  const dob     = document.getElementById('kyc-dob').value;
+  const address = document.getElementById('kyc-address').value.trim();
+  const aadhaar = document.getElementById('kyc-aadhaar').value.replace(/\s/g, '');
+
+  if (!name)   { showToast('Please enter your full name', 'error'); return; }
+  if (!dob)    { showToast('Please enter your date of birth', 'error'); return; }
+  if (!address){ showToast('Please enter your full address', 'error'); return; }
+  if (!/^\d{12}$/.test(aadhaar)) { showToast('Enter a valid 12-digit Aadhaar number', 'error'); return; }
+
+  const front = document.getElementById('kyc-aadhaar-front-preview').src;
+  if (!front || document.getElementById('kyc-aadhaar-front-wrap').classList.contains('empty')) {
+    showToast('Please upload the front side of your Aadhaar card', 'error');
+    return;
+  }
+
+  localStorage.setItem('dm_name', name);
+  localStorage.setItem('dm_kyc_done', '1');
+  mockRiderProfile.name = name;
+  showScreen('vehicle-selection');
+}
+
+function selectVehicleType(type) {
+  localStorage.setItem('dm_vehicle_type', type);
+  if (type === 'ev') {
+    localStorage.setItem('dm_onboarding_done', '1');
+    showToast('Welcome aboard! 🎉', 'success');
+    finishLogin();
+  } else {
+    showScreen('motor-vehicle-details');
+  }
+}
+
+function handleMvdDlFront(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = document.getElementById('mvd-dl-front-preview');
+    img.src = ev.target.result;
+    img.classList.remove('hidden');
+    document.getElementById('mvd-dl-front-placeholder').classList.add('hidden');
+    document.getElementById('mvd-dl-front-wrap').classList.remove('empty');
+  };
+  reader.readAsDataURL(file);
+}
+
+function handleMvdDlBack(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = document.getElementById('mvd-dl-back-preview');
+    img.src = ev.target.result;
+    img.classList.remove('hidden');
+    document.getElementById('mvd-dl-back-placeholder').classList.add('hidden');
+    document.getElementById('mvd-dl-back-wrap').classList.remove('empty');
+  };
+  reader.readAsDataURL(file);
+}
+
+function completeMotorVehicleDetails() {
+  const vType    = document.getElementById('mvd-vehicle-type').value;
+  const regNum   = document.getElementById('mvd-reg-number').value.trim();
+  const makeModel= document.getElementById('mvd-make-model').value.trim();
+  const year     = document.getElementById('mvd-year').value;
+  const dlNum    = document.getElementById('mvd-dl-number').value.trim();
+  const dlClass  = document.getElementById('mvd-dl-class').value;
+  const dlIssue  = document.getElementById('mvd-dl-issue').value;
+  const dlExpiry = document.getElementById('mvd-dl-expiry').value;
+
+  if (!vType)    { showToast('Please select vehicle type', 'error'); return; }
+  if (!regNum)   { showToast('Enter vehicle registration number', 'error'); return; }
+  if (!makeModel){ showToast('Enter vehicle make & model', 'error'); return; }
+  if (!year)     { showToast('Enter year of manufacture', 'error'); return; }
+  if (!dlNum)    { showToast('Enter driving licence number', 'error'); return; }
+  if (!dlClass)  { showToast('Please select a licence class', 'error'); return; }
+  if (!dlIssue)  { showToast('Enter licence issue date', 'error'); return; }
+  if (!dlExpiry) { showToast('Enter licence expiry date', 'error'); return; }
+
+  if (new Date(dlExpiry) < new Date()) {
+    showToast('Driving licence has expired. Please renew it before registering.', 'error');
+    return;
+  }
+
+  const dlFrontUploaded = !document.getElementById('mvd-dl-front-wrap').classList.contains('empty');
+  if (!dlFrontUploaded) {
+    showToast('Please upload the front of your driving licence', 'error');
+    return;
+  }
+
+  localStorage.setItem('dm_onboarding_done', '1');
+  showToast('Registration complete! Welcome aboard 🎉', 'success');
+  finishLogin();
 }
 
 /* ── OTP box auto-advance ────────────────────────────────────── */
