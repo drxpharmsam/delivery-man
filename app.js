@@ -108,12 +108,9 @@ const mockRiderProfile = {
 };
 
 const mockEarnings = {
-  today: 16200,
-  weekly: 89500,
-  escrowHeld: 25000,
-  releasedPayouts: 64500,
-  commissionRate: 12,
-  incentives: 5000,
+  today: 0,
+  weekly: 0,
+  incentives: 0,
   history: [
     { date: '2026-03-03', orders: 4, amount: 16200 },
     { date: '2026-03-02', orders: 6, amount: 24300 },
@@ -1120,15 +1117,7 @@ function initEarnings() {
   document.getElementById('earnings-today').textContent      = fmtFull(e.today);
   document.getElementById('earnings-orders-today').textContent = state.orders.filter(o => o.status === 'delivered').length + ' orders completed';
   document.getElementById('earnings-weekly-val').textContent = fmt(e.weekly);
-  document.getElementById('earnings-escrow-val').textContent = fmt(e.escrowHeld);
-  document.getElementById('earnings-released-val').textContent = fmt(e.releasedPayouts);
   document.getElementById('earnings-incentives-val').textContent = fmt(e.incentives);
-
-  const gross = Math.round(e.today / (1 - e.commissionRate / 100));
-  const comm  = gross - e.today;
-  document.getElementById('comm-gross').textContent    = fmtFull(gross);
-  document.getElementById('comm-deducted').textContent = '−' + fmtFull(comm);
-  document.getElementById('comm-net').textContent      = fmtFull(e.today);
 
   const table = document.getElementById('payment-history-table');
   table.innerHTML = e.history.map(h => `
